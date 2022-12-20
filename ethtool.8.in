@@ -79,7 +79,7 @@
 .\"	\(*NC - Network Classifier type values
 .\"
 .ds NC \fBether\fP|\fBip4\fP|\fBtcp4\fP|\fBudp4\fP|\fBsctp4\fP|\fBah4\fP|\fBesp4\fP|\fBip6\fP|\fBtcp6\fP|\fBudp6\fP|\fBah6\fP|\fBesp6\fP|\fBsctp6\fP
-..
+.
 .\"
 .\" Start URL.
 .de UR
@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "October 2022" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "December 2022" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -249,7 +249,7 @@ ethtool \- query or control network driver and hardware settings
 .RB [\fBeth\-phy\fP]
 .RB [\fBeth\-mac\fP]
 .RB [\fBeth\-ctrl\fP]
-.RN [\fBrmon\fP]
+.RB [\fBrmon\fP]
 .RB ]
 .HP
 .B ethtool \-\-phy\-statistics
@@ -695,7 +695,6 @@ naming of NIC- and driver-specific statistics across vendors.
 .RS 4
 .TP
 .B \fB\-\-all\-groups
-.E
 .TP
 .B \fB\-\-groups [\fBeth\-phy\fP] [\fBeth\-mac\fP] [\fBeth\-ctrl\fP] [\fBrmon\fP]
 Request groups of standard device statistics.
@@ -776,6 +775,7 @@ nokeep;
 lB	l	lB.
 0x001	10baseT Half
 0x002	10baseT Full
+0x100000000000000000000000	10baseT1L Full
 0x004	100baseT Half
 0x008	100baseT Full
 0x80000000000000000	100baseT1 Full

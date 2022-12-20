@@ -31,6 +31,7 @@
 
 #include "internal.h"
 #include <string.h>
+#include <strings.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <stdio.h>
@@ -46,6 +47,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <linux/ioctl.h>
 #include <linux/sockios.h>
 #include <linux/netlink.h>
 
@@ -301,7 +303,7 @@ static void parse_generic_cmdline(struct cmd_context *ctx,
 				case CMDL_IP4: {
 					u32 *p = info[idx].wanted_val;
 					struct in_addr in;
-					if (!inet_aton(argp[i], &in))
+					if (!inet_pton(AF_INET, argp[i], &in))
 						exit_bad_args();
 					*p = in.s_addr;
 					break;
@@ -475,6 +477,7 @@ static void init_global_link_mode_masks(void)
 		ETHTOOL_LINK_MODE_400000baseCR4_Full_BIT,
 		ETHTOOL_LINK_MODE_100baseFX_Half_BIT,
 		ETHTOOL_LINK_MODE_100baseFX_Full_BIT,
+		ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
 	};
 	static const enum ethtool_link_mode_bit_indices
 		additional_advertised_flags_bits[] = {
@@ -715,6 +718,8 @@ static void dump_link_caps(const char *prefix, const char *an_prefix,
 		  "100baseFX/Half" },
 		{ 1, ETHTOOL_LINK_MODE_100baseFX_Full_BIT,
 		  "100baseFX/Full" },
+		{ 0, ETHTOOL_LINK_MODE_10baseT1L_Full_BIT,
+		  "10baseT1L/Full" },
 	};
 	int indent;
 	int did1, new_line_pend;
@@ -1131,6 +1136,8 @@ static const struct {
 	{ "bnxt_en", bnxt_dump_regs },
 	{ "cpsw-switch", cpsw_dump_regs },
 	{ "lan743x", lan743x_dump_regs },
+	{ "fsl_enetc", fsl_enetc_dump_regs },
+	{ "fsl_enetc_vf", fsl_enetc_dump_regs },
 };
 #endif
 
