@@ -3,6 +3,7 @@ ethtool (1:6.1-1) UNRELEASED; urgency=medium
   * New upstream release: 6.1
   * debian/copyright: Add stanza for files introduced with support for NXP
     ENETC driver
+  * Declare compliance with Debian policy 4.6.2
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 20 Dec 2022 07:28:50 +0100
 
