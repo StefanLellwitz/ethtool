@@ -21,6 +21,9 @@
 #include <unistd.h>
 #include <endian.h>
 #include <sys/ioctl.h>
+#define __UAPI_DEF_IF_IFNAMSIZ	1
+#define __UAPI_DEF_IF_IFMAP	1
+#define __UAPI_DEF_IF_IFREQ	1
 #include <linux/if.h>
 
 #include "json_writer.h"
@@ -50,10 +53,6 @@ typedef int32_t s32;
 #include <linux/kernel.h>
 #ifndef __KERNEL_DIV_ROUND_UP
 #define __KERNEL_DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
-#endif
-
-#ifndef ALTIFNAMSIZ
-#define ALTIFNAMSIZ 128
 #endif
 
 #include <linux/ethtool.h>

@@ -7,7 +7,8 @@ EXTRA_DIST = LICENSE ethtool.8 ethtool.spec.in aclocal.m4 ChangeLog autogen.sh
 
 sbin_PROGRAMS = ethtool
 ethtool_SOURCES = ethtool.c uapi/linux/ethtool.h internal.h \
-		  uapi/linux/net_tstamp.h rxclass.c common.c common.h \
+		  uapi/linux/net_tstamp.h uapi/linux/if.h uapi/linux/hdlc/ioctl.h \
+		  rxclass.c common.c common.h \
 		  json_writer.c json_writer.h json_print.c json_print.h \
 		  list.h
 if ETHTOOL_ENABLE_PRETTY_DUMP
@@ -39,11 +40,12 @@ ethtool_SOURCES += \
 		  netlink/eee.c netlink/tsinfo.c netlink/fec.c \
 		  netlink/stats.c \
 		  netlink/desc-ethtool.c netlink/desc-genlctrl.c \
-		  netlink/module-eeprom.c netlink/module.c \
+		  netlink/module-eeprom.c netlink/module.c netlink/rss.c \
 		  netlink/desc-rtnl.c netlink/cable_test.c netlink/tunnels.c \
 		  uapi/linux/ethtool_netlink.h \
 		  uapi/linux/netlink.h uapi/linux/genetlink.h \
-		  uapi/linux/rtnetlink.h uapi/linux/if_link.h
+		  uapi/linux/rtnetlink.h uapi/linux/if_link.h \
+		  uapi/linux/if.h uapi/linux/hdlc/ioctl.h
 AM_CPPFLAGS += @MNL_CFLAGS@
 LDADD += @MNL_LIBS@
 endif

@@ -5,6 +5,7 @@
  */
 
 #include <errno.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -165,6 +166,12 @@ static const struct link_mode_info link_modes[] = {
 	[ETHTOOL_LINK_MODE_100baseFX_Half_BIT]		= __HALF_DUPLEX(100),
 	[ETHTOOL_LINK_MODE_100baseFX_Full_BIT]		= __REAL(100),
 	[ETHTOOL_LINK_MODE_10baseT1L_Full_BIT]		= __REAL(10),
+	[ETHTOOL_LINK_MODE_800000baseCR8_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_800000baseKR8_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_800000baseDR8_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_800000baseDR8_2_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_800000baseSR8_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_800000baseVR8_Full_BIT]	= __REAL(800000),
 };
 const unsigned int link_modes_count = ARRAY_SIZE(link_modes);
 
@@ -772,6 +779,13 @@ int linkstate_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		}
 	}
 
+	if (tb[ETHTOOL_A_LINKSTATE_EXT_DOWN_CNT]) {
+		uint32_t val;
+
+		val = mnl_attr_get_u32(tb[ETHTOOL_A_LINKSTATE_EXT_DOWN_CNT]);
+		printf("\tLink Down Events: %u\n", val);
+	}
+
 	return MNL_CB_OK;
 }
 
@@ -882,12 +896,16 @@ int debug_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	return MNL_CB_OK;
 }
 
-static int gset_request(struct nl_socket *nlsk, uint8_t msg_type,
+static int gset_request(struct nl_context *nlctx, uint8_t msg_type,
 			uint16_t hdr_attr, mnl_cb_t cb)
 {
+	struct nl_socket *nlsk = nlctx->ethnl_socket;
+	u32 flags;
 	int ret;
 
-	ret = nlsock_prep_get_request(nlsk, msg_type, hdr_attr, 0);
+	flags = get_stats_flag(nlctx, msg_type, hdr_attr);
+
+	ret = nlsock_prep_get_request(nlsk, msg_type, hdr_attr, flags);
 	if (ret < 0)
 		return ret;
 	return nlsock_send_get_request(nlsk, cb);
@@ -896,7 +914,6 @@ static int gset_request(struct nl_socket *nlsk, uint8_t msg_type,
 int nl_gset(struct cmd_context *ctx)
 {
 	struct nl_context *nlctx = ctx->nlctx;
-	struct nl_socket *nlsk = nlctx->ethnl_socket;
 	int ret;
 
 	if (netlink_cmd_check(ctx, ETHTOOL_MSG_LINKMODES_GET, true) ||
@@ -908,27 +925,27 @@ int nl_gset(struct cmd_context *ctx)
 
 	nlctx->suppress_nlerr = 1;
 
-	ret = gset_request(nlsk, ETHTOOL_MSG_LINKMODES_GET,
+	ret = gset_request(nlctx, ETHTOOL_MSG_LINKMODES_GET,
 			   ETHTOOL_A_LINKMODES_HEADER, linkmodes_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlsk, ETHTOOL_MSG_LINKINFO_GET,
+	ret = gset_request(nlctx, ETHTOOL_MSG_LINKINFO_GET,
 			   ETHTOOL_A_LINKINFO_HEADER, linkinfo_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlsk, ETHTOOL_MSG_WOL_GET, ETHTOOL_A_WOL_HEADER,
+	ret = gset_request(nlctx, ETHTOOL_MSG_WOL_GET, ETHTOOL_A_WOL_HEADER,
 			   wol_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlsk, ETHTOOL_MSG_DEBUG_GET, ETHTOOL_A_DEBUG_HEADER,
+	ret = gset_request(nlctx, ETHTOOL_MSG_DEBUG_GET, ETHTOOL_A_DEBUG_HEADER,
 			   debug_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlsk, ETHTOOL_MSG_LINKSTATE_GET,
+	ret = gset_request(nlctx, ETHTOOL_MSG_LINKSTATE_GET,
 			   ETHTOOL_A_LINKSTATE_HEADER, linkstate_reply_cb);
 	if (ret == -ENODEV)
 		return ret;

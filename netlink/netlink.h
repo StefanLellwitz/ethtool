@@ -100,12 +100,20 @@ int dump_link_modes(struct nl_context *nlctx, const struct nlattr *bitset,
 		    const char *between, const char *after,
 		    const char *if_none);
 
-static inline void show_u32(const struct nlattr *attr, const char *label)
+static inline void show_u32(const char *key,
+			    const char *fmt,
+			    const struct nlattr *attr)
 {
-	if (attr)
-		printf("%s%u\n", label, mnl_attr_get_u32(attr));
-	else
-		printf("%sn/a\n", label);
+	if (is_json_context()) {
+		if (attr)
+			print_uint(PRINT_JSON, key, NULL,
+				   mnl_attr_get_u32(attr));
+	} else {
+		if (attr)
+			printf("%s%u\n", fmt, mnl_attr_get_u32(attr));
+		else
+			printf("%sn/a\n", fmt);
+	}
 }
 
 static inline const char *u8_to_bool(const uint8_t *val)
@@ -120,7 +128,7 @@ static inline void show_bool_val(const char *key, const char *fmt, uint8_t *val)
 {
 	if (is_json_context()) {
 		if (val)
-			print_bool(PRINT_JSON, key, NULL, val);
+			print_bool(PRINT_JSON, key, NULL, *val);
 	} else {
 		print_string(PRINT_FP, NULL, fmt, u8_to_bool(val));
 	}
@@ -130,6 +138,12 @@ static inline void show_bool(const char *key, const char *fmt,
 			     const struct nlattr *attr)
 {
 	show_bool_val(key, fmt, attr ? mnl_attr_get_payload(attr) : NULL);
+}
+
+static inline void show_cr(void)
+{
+	if (!is_json_context())
+		putchar('\n');
 }
 
 /* misc */

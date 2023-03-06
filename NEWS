@@ -1,3 +1,12 @@
+Version 6.2 - February 21, 2023
+	* Feature: link down event statistics (no option)
+	* Feature: JSON output for coalesce (-c)
+	* Feature: new link modes (no option)
+	* Feature: JSON output for ring (-g)
+	* Feature: netlink handler for RSS get (-x)
+	* Fix: fix boolean value output in JSON output
+	* Fix: fix build errors and warnings
+
 Version 6.1 - December 19, 2022
 	* Feature: update link mode tables
 	* Feature: register dump for NXP ENETC driver (-d)

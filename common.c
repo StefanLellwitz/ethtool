@@ -173,3 +173,39 @@ void dump_mdix(u8 mdix, u8 mdix_ctrl)
 		fprintf(stdout, "\n");
 	}
 }
+
+void print_indir_table(struct cmd_context *ctx, u64 ring_count,
+		       u32 indir_size, u32 *indir)
+{
+	u32 i;
+
+	printf("RX flow hash indirection table for %s with %llu RX ring(s):\n",
+	       ctx->devname, ring_count);
+
+	if (!indir_size)
+		printf("Operation not supported\n");
+
+	for (i = 0; i < indir_size; i++) {
+		if (i % 8 == 0)
+			printf("%5u: ", i);
+		printf(" %5u", indir[i]);
+		if (i % 8 == 7 || i == indir_size - 1)
+			fputc('\n', stdout);
+	}
+}
+
+void print_rss_hkey(u8 *hkey, u32 hkey_size)
+{
+	u32 i;
+
+	printf("RSS hash key:\n");
+	if (!hkey_size || !hkey)
+		printf("Operation not supported\n");
+
+	for (i = 0; i < hkey_size; i++) {
+		if (i == (hkey_size - 1))
+			printf("%02x\n", hkey[i]);
+		else
+			printf("%02x:", hkey[i]);
+	}
+}
