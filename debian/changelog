@@ -1,3 +1,9 @@
+ethtool (1:6.3-1~exp1) UNRELEASED; urgency=medium
+
+  * New upstream release: 6.3
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Fri, 26 May 2023 19:38:18 +0200
+
 ethtool (1:6.2-1~exp1) experimental; urgency=medium
 
   * New upstream release: 6.2
