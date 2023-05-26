@@ -2,6 +2,7 @@ ethtool (1:6.3-1~exp1) UNRELEASED; urgency=medium
 
   * New upstream release: 6.3
   * debian/copyright: Cover copyright statement for all files in uapi/linux
+  * Update copyright information for debian/* packaging files
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Fri, 26 May 2023 19:38:18 +0200
 
