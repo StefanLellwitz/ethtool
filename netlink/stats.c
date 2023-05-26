@@ -268,6 +268,13 @@ err_free:
 	return ret;
 }
 
+static const struct lookup_entry_u32 stats_src_values[] = {
+	{ .arg = "aggregate",	.val = ETHTOOL_MAC_STATS_SRC_AGGREGATE },
+	{ .arg = "emac",	.val = ETHTOOL_MAC_STATS_SRC_EMAC },
+	{ .arg = "pmac",	.val = ETHTOOL_MAC_STATS_SRC_PMAC },
+	{}
+};
+
 static const struct param_parser stats_params[] = {
 	{
 		.arg		= "--groups",
@@ -282,6 +289,13 @@ static const struct param_parser stats_params[] = {
 		.type		= ETHTOOL_A_STATS_GROUPS,
 		.handler	= stats_parse_all_groups,
 		.alt_group	= 1,
+	},
+	{
+		.arg		= "--src",
+		.type		= ETHTOOL_A_STATS_SRC,
+		.handler	= nl_parse_lookup_u32,
+		.handler_data	= stats_src_values,
+		.min_argc	= 1,
 	},
 	{}
 };

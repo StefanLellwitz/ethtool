@@ -172,6 +172,9 @@ static const struct link_mode_info link_modes[] = {
 	[ETHTOOL_LINK_MODE_800000baseDR8_2_Full_BIT]	= __REAL(800000),
 	[ETHTOOL_LINK_MODE_800000baseSR8_Full_BIT]	= __REAL(800000),
 	[ETHTOOL_LINK_MODE_800000baseVR8_Full_BIT]	= __REAL(800000),
+	[ETHTOOL_LINK_MODE_10baseT1S_Full_BIT]		= __REAL(10),
+	[ETHTOOL_LINK_MODE_10baseT1S_Half_BIT]		= __HALF_DUPLEX(10),
+	[ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT]	= __HALF_DUPLEX(10),
 };
 const unsigned int link_modes_count = ARRAY_SIZE(link_modes);
 
@@ -896,12 +899,80 @@ int debug_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	return MNL_CB_OK;
 }
 
-static int gset_request(struct nl_context *nlctx, uint8_t msg_type,
+int plca_cfg_reply_cb(const struct nlmsghdr *nlhdr, void *data)
+{
+	const struct nlattr *tb[ETHTOOL_A_PLCA_MAX + 1] = {};
+	DECLARE_ATTR_TB_INFO(tb);
+	struct nl_context *nlctx = data;
+	int ret;
+
+	if (nlctx->is_dump || nlctx->is_monitor)
+		nlctx->no_banner = false;
+	ret = mnl_attr_parse(nlhdr, GENL_HDRLEN, attr_cb, &tb_info);
+	if (ret < 0)
+		return ret;
+	nlctx->devname = get_dev_name(tb[ETHTOOL_A_PLCA_HEADER]);
+	if (!dev_ok(nlctx))
+		return MNL_CB_OK;
+
+	print_banner(nlctx);
+	printf("\tPLCA support: ");
+
+	if (tb[ETHTOOL_A_PLCA_VERSION]) {
+		uint16_t val = mnl_attr_get_u16(tb[ETHTOOL_A_PLCA_VERSION]);
+
+		printf("OPEN Alliance v%u.%u",
+		       (unsigned int)((val >> 4) & 0xF),
+		       (unsigned int)(val & 0xF));
+	} else
+		printf("non-standard");
+
+	printf("\n");
+
+	return MNL_CB_OK;
+}
+
+int plca_status_reply_cb(const struct nlmsghdr *nlhdr, void *data)
+{
+	const struct nlattr *tb[ETHTOOL_A_PLCA_MAX + 1] = {};
+	DECLARE_ATTR_TB_INFO(tb);
+	struct nl_context *nlctx = data;
+	int ret;
+
+	if (nlctx->is_dump || nlctx->is_monitor)
+		nlctx->no_banner = false;
+	ret = mnl_attr_parse(nlhdr, GENL_HDRLEN, attr_cb, &tb_info);
+	if (ret < 0)
+		return ret;
+	nlctx->devname = get_dev_name(tb[ETHTOOL_A_PLCA_HEADER]);
+	if (!dev_ok(nlctx))
+		return MNL_CB_OK;
+
+	print_banner(nlctx);
+	printf("\tPLCA status: ");
+
+	if (tb[ETHTOOL_A_PLCA_STATUS]) {
+		uint8_t val = mnl_attr_get_u8(tb[ETHTOOL_A_PLCA_STATUS]);
+
+		printf(val ? "up" : "down");
+	} else
+		printf("unknown");
+
+	printf("\n");
+
+	return MNL_CB_OK;
+}
+
+static int gset_request(struct cmd_context *ctx, uint8_t msg_type,
 			uint16_t hdr_attr, mnl_cb_t cb)
 {
+	struct nl_context *nlctx = ctx->nlctx;
 	struct nl_socket *nlsk = nlctx->ethnl_socket;
 	u32 flags;
 	int ret;
+
+	if (netlink_cmd_check(ctx, msg_type, true))
+		return 0;
 
 	flags = get_stats_flag(nlctx, msg_type, hdr_attr);
 
@@ -913,9 +984,9 @@ static int gset_request(struct nl_context *nlctx, uint8_t msg_type,
 
 int nl_gset(struct cmd_context *ctx)
 {
-	struct nl_context *nlctx = ctx->nlctx;
 	int ret;
 
+	/* Check for the base set of commands */
 	if (netlink_cmd_check(ctx, ETHTOOL_MSG_LINKMODES_GET, true) ||
 	    netlink_cmd_check(ctx, ETHTOOL_MSG_LINKINFO_GET, true) ||
 	    netlink_cmd_check(ctx, ETHTOOL_MSG_WOL_GET, true) ||
@@ -923,38 +994,47 @@ int nl_gset(struct cmd_context *ctx)
 	    netlink_cmd_check(ctx, ETHTOOL_MSG_LINKSTATE_GET, true))
 		return -EOPNOTSUPP;
 
-	nlctx->suppress_nlerr = 1;
+	ctx->nlctx->suppress_nlerr = 1;
 
-	ret = gset_request(nlctx, ETHTOOL_MSG_LINKMODES_GET,
+	ret = gset_request(ctx, ETHTOOL_MSG_LINKMODES_GET,
 			   ETHTOOL_A_LINKMODES_HEADER, linkmodes_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlctx, ETHTOOL_MSG_LINKINFO_GET,
+	ret = gset_request(ctx, ETHTOOL_MSG_LINKINFO_GET,
 			   ETHTOOL_A_LINKINFO_HEADER, linkinfo_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlctx, ETHTOOL_MSG_WOL_GET, ETHTOOL_A_WOL_HEADER,
+	ret = gset_request(ctx, ETHTOOL_MSG_WOL_GET, ETHTOOL_A_WOL_HEADER,
 			   wol_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlctx, ETHTOOL_MSG_DEBUG_GET, ETHTOOL_A_DEBUG_HEADER,
+	ret = gset_request(ctx, ETHTOOL_MSG_PLCA_GET_CFG,
+			   ETHTOOL_A_PLCA_HEADER, plca_cfg_reply_cb);
+	if (ret == -ENODEV)
+		return ret;
+
+	ret = gset_request(ctx, ETHTOOL_MSG_DEBUG_GET, ETHTOOL_A_DEBUG_HEADER,
 			   debug_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	ret = gset_request(nlctx, ETHTOOL_MSG_LINKSTATE_GET,
+	ret = gset_request(ctx, ETHTOOL_MSG_LINKSTATE_GET,
 			   ETHTOOL_A_LINKSTATE_HEADER, linkstate_reply_cb);
 	if (ret == -ENODEV)
 		return ret;
 
-	if (!nlctx->no_banner) {
+	ret = gset_request(ctx, ETHTOOL_MSG_PLCA_GET_STATUS,
+			   ETHTOOL_A_PLCA_HEADER, plca_status_reply_cb);
+	if (ret == -ENODEV)
+		return ret;
+
+	if (!ctx->nlctx->no_banner) {
 		printf("No data available\n");
 		return 75;
 	}
-
 
 	return 0;
 }

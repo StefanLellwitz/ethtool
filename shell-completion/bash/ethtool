@@ -254,6 +254,9 @@ _ethtool_coalesce()
 		[tx-usecs-high]=1
 		[tx-usecs-irq]=1
 		[tx-usecs-low]=1
+		[tx-aggr-max-bytes]=1
+		[tx-aggr-max-frames]=1
+		[tx-aggr-time-usecs]=1
 	)
 
 	case "$prev" in

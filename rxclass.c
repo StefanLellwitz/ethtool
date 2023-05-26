@@ -598,7 +598,7 @@ int rxclass_rule_ins(struct cmd_context *ctx,
 	else if (loc & RX_CLS_LOC_SPECIAL)
 		printf("Added rule with ID %d\n", nfccmd.fs.location);
 
-	return 0;
+	return err;
 }
 
 int rxclass_rule_del(struct cmd_context *ctx, __u32 loc)

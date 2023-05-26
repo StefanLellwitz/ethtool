@@ -89,6 +89,13 @@ int coalesce_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		  tb[ETHTOOL_A_COALESCE_USE_CQE_MODE_RX]);
 	show_bool("tx", "TX: %s\n", tb[ETHTOOL_A_COALESCE_USE_CQE_MODE_TX]);
 	show_cr();
+	show_u32("tx-aggr-max-bytes", "tx-aggr-max-bytes:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_MAX_BYTES]);
+	show_u32("tx-aggr-max-frames", "tx-aggr-max-frames:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_MAX_FRAMES]);
+	show_u32("tx-aggr-time-usecs", "tx-aggr-time-usecs\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_TIME_USECS]);
+	show_cr();
 
 	close_json_object();
 
@@ -265,6 +272,24 @@ static const struct param_parser scoalesce_params[] = {
 		.arg		= "cqe-mode-tx",
 		.type		= ETHTOOL_A_COALESCE_USE_CQE_MODE_TX,
 		.handler	= nl_parse_u8bool,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-max-bytes",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_MAX_BYTES,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-max-frames",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_MAX_FRAMES,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-time-usecs",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_TIME_USECS,
+		.handler	= nl_parse_direct_u32,
 		.min_argc	= 1,
 	},
 	{}

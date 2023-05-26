@@ -484,6 +484,9 @@ static void init_global_link_mode_masks(void)
 		ETHTOOL_LINK_MODE_800000baseDR8_2_Full_BIT,
 		ETHTOOL_LINK_MODE_800000baseSR8_Full_BIT,
 		ETHTOOL_LINK_MODE_800000baseVR8_Full_BIT,
+		ETHTOOL_LINK_MODE_10baseT1S_Full_BIT,
+		ETHTOOL_LINK_MODE_10baseT1S_Half_BIT,
+		ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
 	};
 	static const enum ethtool_link_mode_bit_indices
 		additional_advertised_flags_bits[] = {
@@ -738,6 +741,12 @@ static void dump_link_caps(const char *prefix, const char *an_prefix,
 		  "800000baseSR8/Full" },
 		{ 0, ETHTOOL_LINK_MODE_800000baseVR8_Full_BIT,
 		  "800000baseVR8/Full" },
+		{ 0, ETHTOOL_LINK_MODE_10baseT1S_Full_BIT,
+		  "10baseT1S/Full" },
+		{ 1, ETHTOOL_LINK_MODE_10baseT1S_Half_BIT,
+		  "10baseT1S/Half" },
+		{ 0, ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
+		  "10baseT1S/Half" },
 	};
 	int indent;
 	int did1, new_line_pend;
@@ -5673,7 +5682,8 @@ static const struct option args[] = {
 		.json	= true,
 		.func	= do_gpause,
 		.nlfunc	= nl_gpause,
-		.help	= "Show pause options"
+		.help	= "Show pause options",
+		.xhelp	= "		[ --src aggregate | emac | pmac ]\n"
 	},
 	{
 		.opts	= "-A|--pause",
@@ -5720,6 +5730,9 @@ static const struct option args[] = {
 			  "		[sample-interval N]\n"
 			  "		[cqe-mode-rx on|off]\n"
 			  "		[cqe-mode-tx on|off]\n"
+			  "		[tx-aggr-max-bytes N]\n"
+			  "		[tx-aggr-max-frames N]\n"
+			  "		[tx-aggr-time-usecs N]\n"
 	},
 	{
 		.opts	= "-g|--show-ring",
@@ -5737,9 +5750,10 @@ static const struct option args[] = {
 			  "		[ rx-mini N ]\n"
 			  "		[ rx-jumbo N ]\n"
 			  "		[ tx N ]\n"
-			  "		[ rx-buf-len N]\n"
-			  "             [ cqe-size N]\n"
-			  "		[ tx-push on|off]\n"
+			  "		[ rx-buf-len N ]\n"
+			  "		[ cqe-size N ]\n"
+			  "		[ tx-push on|off ]\n"
+			  "		[ rx-push on|off ]\n"
 	},
 	{
 		.opts	= "-k|--show-features|--show-offload",
@@ -5793,13 +5807,13 @@ static const struct option args[] = {
 		.opts	= "-p|--identify",
 		.func	= do_phys_id,
 		.help	= "Show visible port identification (e.g. blinking)",
-		.xhelp	= "               [ TIME-IN-SECONDS ]\n"
+		.xhelp	= "		[ TIME-IN-SECONDS ]\n"
 	},
 	{
 		.opts	= "-t|--test",
 		.func	= do_test,
 		.help	= "Execute adapter self test",
-		.xhelp	= "               [ online | offline | external_lb ]\n"
+		.xhelp	= "		[ online | offline | external_lb ]\n"
 	},
 	{
 		.opts	= "-S|--statistics",
@@ -5808,7 +5822,8 @@ static const struct option args[] = {
 		.nlchk	= nl_gstats_chk,
 		.nlfunc	= nl_gstats,
 		.help	= "Show adapter statistics",
-		.xhelp	= "               [ --all-groups | --groups [eth-phy] [eth-mac] [eth-ctrl] [rmon] ]\n"
+		.xhelp	= "		[ --all-groups | --groups [eth-phy] [eth-mac] [eth-ctrl] [rmon] ]\n"
+			  "		[ --src aggregate | emac | pmac ]\n"
 	},
 	{
 		.opts	= "--phy-statistics",
@@ -5848,7 +5863,7 @@ static const struct option args[] = {
 			  "			[ dst-mac %x:%x:%x:%x:%x:%x [m %x:%x:%x:%x:%x:%x] ]\n"
 			  "			[ action %d ] | [ vf %d queue %d ]\n"
 			  "			[ context %d ]\n"
-			  "			[ loc %d]] |\n"
+			  "			[ loc %d ] |\n"
 			  "		delete %d\n"
 	},
 	{
@@ -5879,7 +5894,7 @@ static const struct option args[] = {
 		.opts	= "-f|--flash",
 		.func	= do_flash,
 		.help	= "Flash firmware image from the specified file to a region on the device",
-		.xhelp	= "               FILENAME [ REGION-NUMBER-TO-FLASH ]\n"
+		.xhelp	= "		FILENAME [ REGION-NUMBER-TO-FLASH ]\n"
 	},
 	{
 		.opts	= "-P|--show-permaddr",
@@ -5910,10 +5925,10 @@ static const struct option args[] = {
 		.func	= do_schannels,
 		.nlfunc	= nl_schannels,
 		.help	= "Set Channels",
-		.xhelp	= "               [ rx N ]\n"
-			  "               [ tx N ]\n"
-			  "               [ other N ]\n"
-			  "               [ combined N ]\n"
+		.xhelp	= "		[ rx N ]\n"
+			  "		[ tx N ]\n"
+			  "		[ other N ]\n"
+			  "		[ combined N ]\n"
 	},
 	{
 		.opts	= "--show-priv-flags",
@@ -5980,16 +5995,16 @@ static const struct option args[] = {
 		.xhelp	= "		[ rx-copybreak ]\n"
 			  "		[ tx-copybreak ]\n"
 			  "		[ tx-buf-size ]\n"
-			  "		[ pfc-precention-tout ]\n"
+			  "		[ pfc-prevention-tout ]\n"
 	},
 	{
 		.opts	= "--set-tunable",
 		.func	= do_stunable,
 		.help	= "Set tunable",
-		.xhelp	= "		[ rx-copybreak N]\n"
-			  "		[ tx-copybreak N]\n"
-			  "		[ tx-buf-size N]\n"
-			  "		[ pfc-precention-tout N]\n"
+		.xhelp	= "		[ rx-copybreak N ]\n"
+			  "		[ tx-copybreak N ]\n"
+			  "		[ tx-buf-size N ]\n"
+			  "		[ pfc-prevention-tout N ]\n"
 	},
 	{
 		.opts	= "--reset",
@@ -6029,14 +6044,14 @@ static const struct option args[] = {
 		.func	= do_sfec,
 		.nlfunc	= nl_sfec,
 		.help	= "Set FEC settings",
-		.xhelp	= "		[ encoding auto|off|rs|baser|llrs [...]]\n"
+		.xhelp	= "		[ encoding auto|off|rs|baser|llrs [...] ]\n"
 	},
 	{
 		.opts	= "-Q|--per-queue",
 		.func	= do_perqueue,
 		.help	= "Apply per-queue command. ",
 		.xhelp	= "The supported sub commands include --show-coalesce, --coalesce"
-			  "             [queue_mask %x] SUB_COMMAND\n",
+			  "		[queue_mask %x] SUB_COMMAND\n",
 	},
 	{
 		.opts	= "--cable-test",
@@ -6070,6 +6085,55 @@ static const struct option args[] = {
 		.nlfunc	= nl_smodule,
 		.help	= "Set transceiver module settings",
 		.xhelp	= "		[ power-mode-policy high|auto ]\n"
+	},
+	{
+		.opts	= "--get-plca-cfg",
+		.nlfunc	= nl_plca_get_cfg,
+		.help	= "Get PLCA configuration",
+	},
+	{
+		.opts	= "--set-plca-cfg",
+		.nlfunc	= nl_plca_set_cfg,
+		.help	= "Set PLCA configuration",
+		.xhelp  = "		[ enable on|off ]\n"
+			  "		[ node-id N ]\n"
+			  "		[ node-cnt N ]\n"
+			  "		[ to-tmr N ]\n"
+			  "		[ burst-cnt N ]\n"
+			  "		[ burst-tmr N ]\n"
+	},
+	{
+		.opts	= "--get-plca-status",
+		.nlfunc	= nl_plca_get_status,
+		.help	= "Get PLCA status information",
+	},
+	{
+		.opts	= "--show-mm",
+		.json	= true,
+		.nlfunc	= nl_get_mm,
+		.help	= "Show MAC merge layer state",
+	},
+	{
+		.opts	= "--set-mm",
+		.nlfunc	= nl_set_mm,
+		.help	= "Set MAC merge layer parameters",
+			  "		[ verify-enabled on|off ]\n"
+			  "		[ verify-time N ]\n"
+			  "		[ tx-enabled on|off ]\n"
+			  "		[ pmac-enabled on|off ]\n"
+			  "		[ tx-min-frag-size 60-252 ]\n"
+	},
+	{
+		.opts	= "--show-pse",
+		.json	= true,
+		.nlfunc	= nl_gpse,
+		.help	= "Show settings for Power Sourcing Equipment",
+	},
+	{
+		.opts	= "--set-pse",
+		.nlfunc	= nl_spse,
+		.help	= "Set Power Sourcing Equipment settings",
+		.xhelp	= "		[ podl-pse-admin-control enable|disable ]\n"
 	},
 	{
 		.opts	= "-h|--help",
@@ -6341,6 +6405,9 @@ int main(int argc, char **argp)
 
 	init_global_link_mode_masks();
 
+	if (argc < 2)
+		exit_bad_args();
+
 	/* Skip command name */
 	argp++;
 	argc--;
@@ -6385,7 +6452,7 @@ int main(int argc, char **argp)
 	 * name to get settings for (which we don't expect to begin
 	 * with '-').
 	 */
-	if (argc == 0)
+	if (!*argp)
 		exit_bad_args();
 
 	k = find_option(*argp);

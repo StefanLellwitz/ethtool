@@ -57,6 +57,7 @@ int rings_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	show_u32("rx-buf-len", "RX Buf Len:\t", tb[ETHTOOL_A_RINGS_RX_BUF_LEN]);
 	show_u32("cqe-size", "CQE Size:\t", tb[ETHTOOL_A_RINGS_CQE_SIZE]);
 	show_bool("tx-push", "TX Push:\t%s\n", tb[ETHTOOL_A_RINGS_TX_PUSH]);
+	show_bool("rx-push", "RX Push:\t%s\n", tb[ETHTOOL_A_RINGS_RX_PUSH]);
 
 	tcp_hds_fmt = "TCP data split:\t%s\n";
 	tcp_hds_key = "tcp-data-split";
@@ -151,6 +152,12 @@ static const struct param_parser sring_params[] = {
 	{
 		.arg            = "tx-push",
 		.type           = ETHTOOL_A_RINGS_TX_PUSH,
+		.handler        = nl_parse_u8bool,
+		.min_argc       = 1,
+	},
+	{
+		.arg            = "rx-push",
+		.type           = ETHTOOL_A_RINGS_RX_PUSH,
 		.handler        = nl_parse_u8bool,
 		.min_argc       = 1,
 	},

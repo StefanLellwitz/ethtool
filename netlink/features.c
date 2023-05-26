@@ -266,7 +266,7 @@ int nl_gfeatures(struct cmd_context *ctx)
 
 struct sfeatures_context {
 	bool			nothing_changed;
-	uint32_t		req_mask[0];
+	uint32_t		req_mask[];
 };
 
 static int find_feature(const char *name,
@@ -534,24 +534,36 @@ int nl_sfeatures(struct cmd_context *ctx)
 	nlctx->devname = ctx->devname;
 	ret = msg_init(nlctx, msgbuff, ETHTOOL_MSG_FEATURES_SET,
 		       NLM_F_REQUEST | NLM_F_ACK);
-	if (ret < 0)
+	if (ret < 0) {
+		free(sfctx);
 		return 2;
+	}
 	if (ethnla_fill_header(msgbuff, ETHTOOL_A_FEATURES_HEADER, ctx->devname,
-			       ETHTOOL_FLAG_COMPACT_BITSETS))
+			       ETHTOOL_FLAG_COMPACT_BITSETS)) {
+		free(sfctx);
 		return -EMSGSIZE;
+	}
 	ret = fill_sfeatures_bitmap(nlctx, feature_names);
-	if (ret < 0)
+	if (ret < 0) {
+		free(sfctx);
 		return ret;
+	}
 
 	ret = nlsock_sendmsg(nlsk, NULL);
-	if (ret < 0)
+	if (ret < 0) {
+		free(sfctx);
 		return 92;
+	}
 	ret = nlsock_process_reply(nlsk, sfeatures_reply_cb, nlctx);
 	if (sfctx->nothing_changed) {
 		fprintf(stderr, "Could not change any device features\n");
+		free(sfctx);
 		return nlctx->exit_code ?: 1;
 	}
-	if (ret == 0)
+	if (ret == 0) {
+		free(sfctx);
 		return 0;
+	}
+	free(sfctx);
 	return nlctx->exit_code ?: 92;
 }

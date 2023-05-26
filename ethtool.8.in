@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "February 2023" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "May 2023" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -188,6 +188,9 @@ ethtool \- query or control network driver and hardware settings
 .BN sample\-interval
 .B2 cqe\-mode\-rx on off
 .B2 cqe\-mode\-tx on off
+.BN tx\-aggr\-max\-bytes
+.BN tx\-aggr\-max\-frames
+.BN tx\-aggr\-time\-usecs
 .HP
 .B ethtool \-g|\-\-show\-ring
 .I devname
@@ -201,6 +204,7 @@ ethtool \- query or control network driver and hardware settings
 .BN rx\-buf\-len
 .BN cqe\-size
 .BN tx\-push
+.BN rx\-push
 .HP
 .B ethtool \-i|\-\-driver
 .I devname
@@ -468,7 +472,6 @@ ethtool \- query or control network driver and hardware settings
 .IR %x ]
 .I sub_command
 .RB ...
- .
 .HP
 .B ethtool \-\-cable\-test
 .I devname
@@ -490,6 +493,46 @@ ethtool \- query or control network driver and hardware settings
 .I devname
 .RB [ power\-mode\-policy
 .BR high | auto ]
+.HP
+.B ethtool \-\-get\-plca\-cfg
+.I devname
+.HP
+.B ethtool \-\-set\-plca\-cfg
+.I devname
+.RB [ enable
+.BR on | off ]
+.BN node\-id N
+.BN node\-cnt N
+.BN to\-tmr N
+.BN burst\-cnt N
+.BN burst\-tmr N
+.HP
+.B ethtool \-\-get\-plca\-status
+.I devname
+.HP
+.B ethtool \-\-show\-mm
+.I devname
+.HP
+.B ethtool \-\-set\-mm
+.I devname
+.RB [ verify\-enabled
+.BR on | off ]
+.RB [ verify\-time
+.BR N ]
+.RB [ tx\-enabled
+.BR on | off ]
+.RB [ pmac\-enabled
+.BR on | off ]
+.RB [ tx\-min\-frag\-size
+.BR N ]
+.HP
+.B ethtool \-\-show\-pse
+.I devname
+.HP
+.B ethtool \-\-set\-pse
+.I devname
+.RB [ podl\-pse\-admin\-control
+.BR enable | disable ]
 .
 .\" Adjust lines (i.e. full justification) and hyphenate.
 .ad
@@ -533,6 +576,15 @@ displaying relevant device statistics for selected get commands.
 .TP
 .B \-a \-\-show\-pause
 Queries the specified Ethernet device for pause parameter information.
+.RS 4
+.TP
+.A3 \fB\-\-src \fBaggregate\fP \fBemac\fP \fBpmac\fP
+If the MAC Merge layer is supported, request a particular source of device
+statistics (eMAC or pMAC, or their aggregate). Only valid if ethtool was
+invoked with the
+.B \-I \-\-include\-statistics
+argument.
+.RE
 .TP
 .B \-A \-\-pause
 Changes the pause parameters of the specified Ethernet device.
@@ -581,6 +633,9 @@ Changes the size of completion queue event.
 .TP
 .BI tx\-push \ on|off
 Specifies whether TX push should be enabled.
+.TP
+.BI rx\-push \ on|off
+Specifies whether RX push should be enabled.
 .RE
 .TP
 .B \-i \-\-driver
@@ -698,6 +753,10 @@ naming of NIC- and driver-specific statistics across vendors.
 .TP
 .B \fB\-\-groups [\fBeth\-phy\fP] [\fBeth\-mac\fP] [\fBeth\-ctrl\fP] [\fBrmon\fP]
 Request groups of standard device statistics.
+.TP
+.A3 \fB\-\-src \fBaggregate\fP \fBemac\fP \fBpmac\fP
+If the MAC Merge layer is supported, request a particular source of device
+statistics (eMAC or pMAC, or their aggregate).
 .RE
 .TP
 .B \-\-phy\-statistics
@@ -776,6 +835,9 @@ lB	l	lB.
 0x001	10baseT Half
 0x002	10baseT Full
 0x100000000000000000000000	10baseT1L Full
+0x8000000000000000000000000	10baseT1S Full
+0x10000000000000000000000000	10baseT1S Half
+0x20000000000000000000000000	10baseT1S_P2MP Half
 0x004	100baseT Half
 0x008	100baseT Full
 0x80000000000000000	100baseT1 Full
@@ -1511,6 +1573,178 @@ administratively up and to low power mode when the last port using it is put
 administratively down. The power mode policy can be set before a module is
 plugged-in.
 .RE
+.TP
+.B \-\-get\-plca\-cfg
+Show the current PLCA parameters for the given interface.
+.RE
+.TP
+.B \-\-set\-plca\-cfg
+Change the PLCA settings for the given interface.
+.RS 4
+.TP
+.A2 enable on off
+Enables or disables the PLCA function. When the PLCA RS is disabled (default),
+the PHY operates in plain CSMA/CD mode. To enable PLCA, the PHY must be assigned
+a unique \fBplca\-id\fR other than 255. This one can be configured concurrently
+with the enable parameter. The \fBenable\fR parameter maps to IEEE 802.3cg-2019
+clause 30.16.1.1.1 (aPLCAAdminState) and clause 30.16.1.2.1 (acPLCAAdminControl).
+.TP
+.BI node\-id \ N
+The unique node identifier in the range [0 .. 255]. Node ID 0 is reserved for
+the coordinator node, the one generating the BEACON signal. There must be
+exactly one coordinator on a PLCA network. Setting the node ID to 255 (default)
+disables the node. This parameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.4
+(aPLCALocalNodeID).
+.TP
+.BI node\-cnt \ N
+The node-cnt [1 .. 255] should be set after the maximum number of nodes that
+can be plugged to the multi-drop network. This parameter regulates the minimum
+length of the PLCA cycle. Therefore, it is only meaningful for the coordinator
+node (\fBnod-id\fR = 0). Setting this parameter on a follower node has no
+effect. The \fBnode\-cnt\fR parameter maps to IEEE 802.3cg-2019 clause
+30.16.1.1.3 (aPLCANodeCount).
+.TP
+.BI to\-tmr \ N
+The TO timer parameter sets the value of the transmit opportunity timer in
+bit-times, and shall be set equal across all the nodes sharing the same
+medium for PLCA to work. The default value of 32 is enough to cover a link of
+roughly 50 mt. This parameter maps to  IEEE 802.3cg-2019 clause 30.16.1.1.5
+(aPLCATransmitOpportunityTimer).
+.TP
+.BI burst\-cnt \ N
+The \fBburst\-cnt\fR parameter [0 .. 255] indicates the extra number of packets
+that the node is allowed to send during a single transmit opportunity.
+By default, this attribute is 0, meaning that the node can send a sigle frame
+per TO. When greater than 0, the PLCA RS keeps the TO after any transmission,
+waiting for the MAC to send a new frame for up to \fBburst\-tmr\fR BTs. This can
+only happen a number of times per PLCA cycle up to the value of this parameter.
+After that, the burst is over and the normal counting of TOs resumes.
+This parameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.6 (aPLCAMaxBurstCount).
+.TP
+.BI burst\-tmr \ N
+The \fBburst\-tmr\fR parameter [0 .. 255] sets how many bit-times the PLCA RS
+waits for the MAC to initiate a new transmission when \fBburst\-cnt\fR is
+greater than 0. If the MAC fails to send a new frame within this time, the burst
+ends and the counting of TOs resumes. Otherwise, the new frame is sent as part
+of the current burst. This parameter maps to IEEE 802.3cg-2019 clause
+30.16.1.1.7 (aPLCABurstTimer). The value of \fBburst\-tmr\fR should be set
+greater than the Inter-Frame-Gap (IFG) time of the MAC (plus some margin)
+for PLCA burst mode to work as intended.
+.RE
+.TP
+.B \-\-get\-plca\-status
+Show the current PLCA status for the given interface. If \fBon\fR, the PHY is
+successfully receiving or generating the BEACON signal. If \fBoff\fR, the PLCA
+function is temporarily disabled and the PHY is operating in plain CSMA/CD mode.
+.RE
+.TP
+.B \-\-show\-mm
+Show the MAC Merge layer state. The ethtool argument
+.B \-I \-\-include\-statistics
+can be used with this command, and MAC Merge layer statistics counters will
+also be retrieved.
+.RS 4
+.TP
+.B pmac-enabled
+Shows whether the pMAC is enabled and capable of receiving traffic and SMD-V
+frames (and responding to them with SMD-R replies).
+.TP
+.B tx-enabled
+Shows whether transmission on the pMAC is administratively enabled.
+.TP
+.B tx-active
+Shows whether transmission on the pMAC is active (verification is either
+successful, or was disabled).
+.TP
+.B tx-min-frag-size
+Shows the minimum size (in octets) of transmitted non-final fragments which
+can be received by the link partner. Corresponds to the standard addFragSize
+variable using the formula:
+
+tx-min-frag-size = 64 * (1 + addFragSize) - 4
+.TP
+.B rx-min-frag-size
+Shows the minimum size (in octets) of non-final fragments which the local
+device supports receiving.
+.TP
+.B verify-enabled
+Shows whether the verification state machine is enabled. This process, if
+successful, ensures that preemptible frames transmitted by the local device
+will not be dropped as error frames by the link partner.
+.TP
+.B verify-time
+Shows the interval in ms between verification attempts, represented as an
+integer between 1 and 128 ms. The standard defines a fixed number of
+verification attempts (verifyLimit) before failing the verification process.
+.TP
+.B max-verify-time
+Shows the maximum value for verify-time accepted by the local device, which
+may be less than 128 ms.
+.TP
+.B verify-status
+Shows the current state of the verification state machine of the local device.
+Values can be
+.B INITIAL,
+.B VERIFYING,
+.B SUCCEEDED,
+.B FAILED
+or
+.B DISABLED.
+
+.RE
+.TP
+.B \-\-set\-mm
+Set the MAC Merge layer parameters.
+.RS 4
+.TP
+.A2 pmac-enabled \ on off
+Enable reception for the pMAC.
+.TP
+.A2 tx-enabled \ on off
+Administatively enable transmission for the pMAC.
+.TP
+.B tx-min-frag-size \ N
+Set the minimum size (in octets) of transmitted non-final fragments which can
+be received by the link partner.
+.TP
+.A2 verify-enabled \ on off
+Enable or disable the verification state machine.
+.TP
+.B verify-time \ N
+Set the interval in ms between verification attempts.
+
+.RE
+.TP
+.B \-\-show\-pse
+Show the current Power Sourcing Equipment (PSE) status for the given interface.
+.RS 4
+.TP
+.B podl-pse-admin-state
+This attribute indicates the operational status of PoDL PSE functions, which
+can be modified using the
+.B podl-pse-admin-control
+parameter. It corresponds to IEEE 802.3-2018 30.15.1.1.2 (aPoDLPSEAdminState),
+with potential values being
+.B enabled, disabled
+.TP
+.B podl-pse-power-detection-status
+This attribute indicates the power detection status of the PoDL PSE. The
+status depend on internal PSE state machine and automatic PD classification
+support. It corresponds to IEEE 802.3-2018 30.15.1.1.3
+(aPoDLPSEPowerDetectionStatus) with potential values being
+.B disabled, searching, delivering power, sleep, idle, error
+.RE
+
+.RE
+.TP
+.B \-\-set\-pse
+Set Power Sourcing Equipment (PSE) parameters.
+.RS 4
+.TP
+.A2 podl-pse-admin-control \ enable disable
+This parameter manages PoDL PSE Admin operations in accordance with the IEEE
+802.3-2018 30.15.1.2.1 (acPoDLPSEAdminControl) specification.
+
 .SH BUGS
 Not supported (in part or whole) on all network drivers.
 .SH AUTHOR
