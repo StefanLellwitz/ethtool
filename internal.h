@@ -36,24 +36,11 @@
 struct nl_context;
 #endif
 
-/* ethtool.h expects these to be defined by <linux/types.h> */
-#ifndef HAVE_BE_TYPES
-typedef uint16_t __be16;
-typedef uint32_t __be32;
-typedef unsigned long long __be64;
-#endif
-
 typedef unsigned long long u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t u8;
 typedef int32_t s32;
-
-/* ethtool.h epxects __KERNEL_DIV_ROUND_UP to be defined by <linux/kernel.h> */
-#include <linux/kernel.h>
-#ifndef __KERNEL_DIV_ROUND_UP
-#define __KERNEL_DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
-#endif
 
 #include <linux/ethtool.h>
 #include <linux/net_tstamp.h>

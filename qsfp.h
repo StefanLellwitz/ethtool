@@ -55,6 +55,8 @@
 #define	 SFF8636_TX2_FAULT_AW	(1 << 1)
 #define	 SFF8636_TX1_FAULT_AW	(1 << 0)
 
+#define	SFF8636_LOL_AW_OFFSET	0x05
+
 /* Module Monitor Interrupt Flags - 6-8 */
 #define	SFF8636_TEMP_AW_OFFSET	0x06
 #define	 SFF8636_TEMP_HALARM_STATUS		(1 << 7)
@@ -525,9 +527,15 @@
 /*  56h-5Fh reserved */
 
 #define	 SFF8636_OPTION_2_OFFSET	0xC1
+/* Tx input equalizers auto-adaptive */
+#define	  SFF8636_O2_TX_EQ_AUTO		(1 << 3)
 /* Rx output amplitude */
 #define	  SFF8636_O2_RX_OUTPUT_AMP	(1 << 0)
 #define	 SFF8636_OPTION_3_OFFSET	0xC2
+/* Tx CDR Loss of Lock */
+#define	  SFF8636_O3_TX_LOL		(1 << 5)
+/* Rx CDR Loss of Lock */
+#define	  SFF8636_O3_RX_LOL		(1 << 4)
 /* Rx Squelch Disable */
 #define	  SFF8636_O3_RX_SQL_DSBL	(1 << 3)
 /* Rx Output Disable capable */

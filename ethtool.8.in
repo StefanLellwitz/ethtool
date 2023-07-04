@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "May 2023" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "July 2023" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -205,6 +205,7 @@ ethtool \- query or control network driver and hardware settings
 .BN cqe\-size
 .BN tx\-push
 .BN rx\-push
+.BN tx\-push\-buf\-len
 .HP
 .B ethtool \-i|\-\-driver
 .I devname
@@ -636,6 +637,10 @@ Specifies whether TX push should be enabled.
 .TP
 .BI rx\-push \ on|off
 Specifies whether RX push should be enabled.
+.TP
+.BI tx\-push\-buf\-len \ N
+Specifies the maximum number of bytes of a transmitted packet a driver can push
+directly to the underlying device
 .RE
 .TP
 .B \-i \-\-driver

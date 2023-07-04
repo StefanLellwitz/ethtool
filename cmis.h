@@ -158,6 +158,17 @@
 #define CMIS_DIAG_TYPE_OFFSET			0x97
 #define CMIS_RX_PWR_TYPE_MASK			0x10
 
+/* Supported Flags Advertisement (Page 1) */
+#define CMIS_DIAG_FLAGS_TX_OFFSET		0x9d
+#define CMIS_DIAG_FL_TX_ADAPTIVE_EQ_FAIL	(1 << 3)
+#define CMIS_DIAG_FL_TX_LOL			(1 << 2)
+#define CMIS_DIAG_FL_TX_LOS			(1 << 1)
+#define CMIS_DIAG_FL_TX_FAIL			(1 << 0)
+
+#define CMIS_DIAG_FLAGS_RX_OFFSET		0x9e
+#define CMIS_DIAG_FL_RX_LOL			(1 << 2)
+#define CMIS_DIAG_FL_RX_LOS			(1 << 1)
+
 /* Supported Monitors Advertisement (Page 1) */
 #define CMIS_DIAG_CHAN_ADVER_OFFSET		0xA0
 #define CMIS_TX_BIAS_MON_MASK			0x01
@@ -207,6 +218,10 @@
  */
 
 /* Media Lane-Specific Flags (Page 0x11) */
+#define CMIS_TX_FAIL_OFFSET			0x87
+#define CMIS_TX_LOS_OFFSET			0x88
+#define CMIS_TX_LOL_OFFSET			0x89
+#define CMIS_TX_EQ_FAIL_OFFSET			0x8a
 #define CMIS_TX_PWR_AW_HALARM_OFFSET		0x8B
 #define CMIS_TX_PWR_AW_LALARM_OFFSET		0x8C
 #define CMIS_TX_PWR_AW_HWARN_OFFSET		0x8D
@@ -215,6 +230,8 @@
 #define CMIS_TX_BIAS_AW_LALARM_OFFSET		0x90
 #define CMIS_TX_BIAS_AW_HWARN_OFFSET		0x91
 #define CMIS_TX_BIAS_AW_LWARN_OFFSET		0x92
+#define CMIS_RX_LOS_OFFSET			0x93
+#define CMIS_RX_LOL_OFFSET			0x94
 #define CMIS_RX_PWR_AW_HALARM_OFFSET		0x95
 #define CMIS_RX_PWR_AW_LALARM_OFFSET		0x96
 #define CMIS_RX_PWR_AW_HWARN_OFFSET		0x97

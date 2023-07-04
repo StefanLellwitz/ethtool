@@ -58,10 +58,6 @@
 #define MAX_ADDR_LEN	32
 #endif
 
-#ifndef NETLINK_GENERIC
-#define NETLINK_GENERIC	16
-#endif
-
 #define KERNEL_VERSION(a,b,c) (((a) << 16) + ((b) << 8) + (c))
 
 static void exit_bad_args(void) __attribute__((noreturn));
@@ -5754,6 +5750,7 @@ static const struct option args[] = {
 			  "		[ cqe-size N ]\n"
 			  "		[ tx-push on|off ]\n"
 			  "		[ rx-push on|off ]\n"
+			  "		[ tx-push-buf-len N]\n"
 	},
 	{
 		.opts	= "-k|--show-features|--show-offload",

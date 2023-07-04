@@ -139,6 +139,44 @@ static void cmis_show_rev_compliance(const struct cmis_memory_map *map)
 	printf("\t%-41s : Rev. %d.%d\n", "Revision compliance", major, minor);
 }
 
+static void
+cmis_show_signals_one(const struct cmis_memory_map *map, const char *name,
+		      int off, int ioff, unsigned int imask)
+{
+	unsigned int v;
+	int i;
+
+	if (!map->page_01h)
+		return;
+
+	v = 0;
+	for (i = 0; i < CMIS_MAX_BANKS && map->upper_memory[i][0x11]; i++)
+		v |= map->upper_memory[i][0x11][off] << (i * 8);
+
+	if (map->page_01h[ioff] & imask)
+		sff_show_lane_status(name, i * 8, "Yes", "No", v);
+}
+
+static void cmis_show_signals(const struct cmis_memory_map *map)
+{
+	cmis_show_signals_one(map, "Rx loss of signal", CMIS_RX_LOS_OFFSET,
+			      CMIS_DIAG_FLAGS_RX_OFFSET, CMIS_DIAG_FL_RX_LOS);
+	cmis_show_signals_one(map, "Tx loss of signal", CMIS_TX_LOS_OFFSET,
+			      CMIS_DIAG_FLAGS_TX_OFFSET, CMIS_DIAG_FL_TX_LOS);
+
+	cmis_show_signals_one(map, "Rx loss of lock", CMIS_RX_LOL_OFFSET,
+			      CMIS_DIAG_FLAGS_RX_OFFSET, CMIS_DIAG_FL_RX_LOL);
+	cmis_show_signals_one(map, "Tx loss of lock", CMIS_TX_LOL_OFFSET,
+			      CMIS_DIAG_FLAGS_TX_OFFSET, CMIS_DIAG_FL_TX_LOL);
+
+	cmis_show_signals_one(map, "Tx fault", CMIS_TX_FAIL_OFFSET,
+			      CMIS_DIAG_FLAGS_TX_OFFSET, CMIS_DIAG_FL_TX_FAIL);
+
+	cmis_show_signals_one(map, "Tx adaptive eq fault",
+			      CMIS_TX_EQ_FAIL_OFFSET, CMIS_DIAG_FLAGS_TX_OFFSET,
+			      CMIS_DIAG_FL_TX_ADAPTIVE_EQ_FAIL);
+}
+
 /**
  * Print information about the device's power consumption.
  * Relevant documents:
@@ -857,6 +895,7 @@ static void cmis_show_all_common(const struct cmis_memory_map *map)
 	cmis_show_link_len(map);
 	cmis_show_vendor_info(map);
 	cmis_show_rev_compliance(map);
+	cmis_show_signals(map);
 	cmis_show_mod_state(map);
 	cmis_show_mod_fault_cause(map);
 	cmis_show_mod_lvl_controls(map);

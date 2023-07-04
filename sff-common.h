@@ -198,6 +198,8 @@ void sff_show_value_with_unit(const __u8 *id, unsigned int reg,
 			      const char *unit);
 void sff_show_ascii(const __u8 *id, unsigned int first_reg,
 		    unsigned int last_reg, const char *name);
+void sff_show_lane_status(const char *name, unsigned int lane_cnt,
+			  const char *yes, const char *no, unsigned int value);
 void sff_show_thresholds(struct sff_diags sd);
 
 void sff8024_show_oui(const __u8 *id, int id_offset);

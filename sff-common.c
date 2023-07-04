@@ -53,6 +53,23 @@ void sff_show_ascii(const __u8 *id, unsigned int first_reg,
 	printf("\n");
 }
 
+void sff_show_lane_status(const char *name, unsigned int lane_cnt,
+			  const char *yes, const char *no, unsigned int value)
+{
+	printf("\t%-41s : ", name);
+	if (!value) {
+		printf("None\n");
+		return;
+	}
+
+	printf("[");
+	while (lane_cnt--) {
+		printf(" %s%c", value & 1 ? yes : no, lane_cnt ? ',': ' ');
+		value >>= 1;
+	}
+	printf("]\n");
+}
+
 void sff8024_show_oui(const __u8 *id, int id_offset)
 {
 	printf("\t%-41s : %02x:%02x:%02x\n", "Vendor OUI",

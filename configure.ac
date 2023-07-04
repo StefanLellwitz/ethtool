@@ -1,6 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(ethtool, 6.3, netdev@vger.kernel.org)
+AC_INIT(ethtool, 6.4, netdev@vger.kernel.org)
 AC_PREREQ(2.52)
+AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([ethtool.c])
 AM_INIT_AUTOMAKE([gnu subdir-objects])
 AC_CONFIG_HEADERS([ethtool-config.h])
@@ -13,22 +14,25 @@ AC_PROG_GCC_TRADITIONAL
 AM_PROG_CC_C_O
 PKG_PROG_PKG_CONFIG
 
+AC_DEFUN([AX_CHECK_STDC],
+	 [AX_CHECK_COMPILE_FLAG([-std=gnu11],
+		[AX_APPEND_FLAG([-std=gnu11])],
+		[AX_CHECK_COMPILE_FLAG([-std=c11],
+			[AX_APPEND_FLAG([-std=c11])],
+			[AC_MSG_ERROR([$PACKAGE requires a C11 compiler])])
+		])
+	])
+AX_CHECK_STDC
+
 dnl Checks for libraries.
 
 dnl Checks for header files.
 
 dnl Checks for typedefs, structures, and compiler characteristics.
-AC_MSG_CHECKING([whether <linux/types.h> defines big-endian types])
-AC_TRY_COMPILE([#include <linux/types.h>],
-	       [__be16 foo;__be32 bar;],
-	       [AC_MSG_RESULT(yes)
-		AC_DEFINE([HAVE_BE_TYPES], [1],
-			  [Define to 1 if <linux/types.h> defines big-endian types])],
-	       [AC_MSG_RESULT(no)])
 
 dnl Checks for library functions.
 AC_HEADER_STDC
-AC_CHECK_FUNCS(socket strtol)
+AC_CHECK_FUNCS(socket)
 
 dnl Check for options
 AC_ARG_ENABLE(pretty-dump,

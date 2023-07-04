@@ -1089,7 +1089,7 @@ static const struct bitset_parser_data advertise_parser_data = {
 	.force_hex	= true,
 };
 
-static const struct lookup_entry_u32 duplex_values[] = {
+static const struct lookup_entry_u8 duplex_values[] = {
 	{ .arg = "half",	.val = DUPLEX_HALF },
 	{ .arg = "full",	.val = DUPLEX_FULL },
 	{}

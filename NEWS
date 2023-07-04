@@ -1,3 +1,10 @@
+Version 6.4 - July 1, 2023
+	* Feature: get/set Tx push buffer length (-G)
+	* Feature: sff-8636 and cmis: report LOL / LOS / Tx Fault (-m)
+	* Fix: fix duplex setting parser (-s)
+	* Misc: check and require C11 language standard
+	* Misc: clean up obsolete pre-build checks
+
 Version 6.3 - May 8, 2023
 	* Feature: PLCA support (--[gs]et-plca-cfg, --get-plca-status)
 	* Feature: MAC Merge layer support (--show-mm, --set-mm)

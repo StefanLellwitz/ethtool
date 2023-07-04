@@ -872,6 +872,35 @@ static void sff8636_show_dom(const struct sff8636_memory_map *map)
 	}
 }
 
+static void sff8636_show_signals(const struct sff8636_memory_map *map)
+{
+	unsigned int v;
+
+	/* There appears to be no Rx LOS support bit, use Tx for both */
+	if (map->page_00h[SFF8636_OPTION_4_OFFSET] & SFF8636_O4_TX_LOS) {
+		v = map->lower_memory[SFF8636_LOS_AW_OFFSET] & 0xf;
+		sff_show_lane_status("Rx loss of signal", 4, "Yes", "No", v);
+		v = map->lower_memory[SFF8636_LOS_AW_OFFSET] >> 4;
+		sff_show_lane_status("Tx loss of signal", 4, "Yes", "No", v);
+	}
+
+	v = map->lower_memory[SFF8636_LOL_AW_OFFSET] & 0xf;
+	if (map->page_00h[SFF8636_OPTION_3_OFFSET] & SFF8636_O3_RX_LOL)
+		sff_show_lane_status("Rx loss of lock", 4, "Yes", "No", v);
+
+	v = map->lower_memory[SFF8636_LOL_AW_OFFSET] >> 4;
+	if (map->page_00h[SFF8636_OPTION_3_OFFSET] & SFF8636_O3_TX_LOL)
+		sff_show_lane_status("Tx loss of lock", 4, "Yes", "No", v);
+
+	v = map->lower_memory[SFF8636_FAULT_AW_OFFSET] & 0xf;
+	if (map->page_00h[SFF8636_OPTION_4_OFFSET] & SFF8636_O4_TX_FAULT)
+		sff_show_lane_status("Tx fault", 4, "Yes", "No", v);
+
+	v = map->lower_memory[SFF8636_FAULT_AW_OFFSET] >> 4;
+	if (map->page_00h[SFF8636_OPTION_2_OFFSET] & SFF8636_O2_TX_EQ_AUTO)
+		sff_show_lane_status("Tx adaptive eq fault", 4, "Yes", "No", v);
+}
+
 static void sff8636_show_page_zero(const struct sff8636_memory_map *map)
 {
 	sff8636_show_ext_identifier(map);
@@ -905,6 +934,7 @@ static void sff8636_show_page_zero(const struct sff8636_memory_map *map)
 		       SFF8636_DATE_VENDOR_LOT_OFFSET + 1, "Date code");
 	sff_show_revision_compliance(map->lower_memory,
 				     SFF8636_REV_COMPLIANCE_OFFSET);
+	sff8636_show_signals(map);
 }
 
 static void sff8636_show_all_common(const struct sff8636_memory_map *map)
