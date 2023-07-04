@@ -1,9 +1,9 @@
-ethtool (1:6.4-1) UNRELEASED; urgency=medium
+ethtool (1:6.4-1) unstable; urgency=medium
 
   * New upstream release: 6.4
   * debian/copyright: Add copyright information for new m4/* files
 
- -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 04 Jul 2023 08:43:46 +0200
+ -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 04 Jul 2023 09:32:47 +0200
 
 ethtool (1:6.3-1) unstable; urgency=medium
 
