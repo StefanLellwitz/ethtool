@@ -206,7 +206,7 @@ License: GPL-3+ with autoconf exception
  or distributing such scripts, even though portions of the text of the
  Macro appear in them. The GNU General Public License (GPL) does govern
  all other use of the material that constitutes the Autoconf Macro.
-
+ .
  This special exception to the GPL applies to versions of the Autoconf
  Macro released by the Autoconf Archive. When you make and distribute a
  modified version of the Autoconf Macro, you may extend this special
