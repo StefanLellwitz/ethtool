@@ -1342,6 +1342,9 @@ int nl_sset(struct cmd_context *ctx)
 	nlctx->devname = ctx->devname;
 
 	ret = nl_parser(nlctx, sset_params, NULL, PARSER_GROUP_MSG, msgbuffs);
+	if (ret == -EOPNOTSUPP)
+		return ret;
+
 	if (ret < 0) {
 		ret = 1;
 		goto out_free;

@@ -1,3 +1,8 @@
+Version 6.5 - September 12, 2023
+	* Feature: register dump for hns3 driver (-d)
+	* Fix: fix fallback to ioctl for sset (-s)
+	* Fix: fix empty slot search in rmgr (-N)
+
 Version 6.4 - July 1, 2023
 	* Feature: get/set Tx push buffer length (-G)
 	* Feature: sff-8636 and cmis: report LOL / LOS / Tx Fault (-m)
