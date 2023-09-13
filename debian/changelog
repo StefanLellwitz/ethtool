@@ -2,6 +2,7 @@ ethtool (1:6.5-1) UNRELEASED; urgency=medium
 
   * New upstream release: 6.5
   * debian/copyright: Fix format error in license stanza
+  * debian/copyright: Add new stanza for hns3 driver support
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 13 Sep 2023 07:10:26 +0200
 
