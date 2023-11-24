@@ -1,3 +1,9 @@
+ethtool (1:6.5-2) experimental; urgency=medium
+
+  * d/rules: Install ethtool in /usr/sbin
+
+ -- Ben Hutchings <benh@debian.org>  Fri, 24 Nov 2023 16:21:40 +0000
+
 ethtool (1:6.5-1) unstable; urgency=medium
 
   * New upstream release: 6.5
