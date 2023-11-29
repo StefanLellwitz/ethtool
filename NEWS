@@ -1,3 +1,7 @@
+Version 6.6 - November, 23, 2023
+	* Feature: support for more CMIS transceiver modules (-m)
+	* Fix: fix build on systems with old kernel uapi headers
+
 Version 6.5 - September 12, 2023
 	* Feature: register dump for hns3 driver (-d)
 	* Fix: fix fallback to ioctl for sset (-s)

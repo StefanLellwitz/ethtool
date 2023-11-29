@@ -977,9 +977,13 @@ void sff8636_show_all_ioctl(const __u8 *id, __u32 eeprom_len)
 {
 	struct sff8636_memory_map map = {};
 
-	if (id[SFF8636_ID_OFFSET] == SFF8024_ID_QSFP_DD ||
-	    id[SFF8636_ID_OFFSET] == SFF8024_ID_OSFP ||
-	    id[SFF8636_ID_OFFSET] == SFF8024_ID_DSFP) {
+	switch (id[SFF8636_ID_OFFSET]) {
+	case SFF8024_ID_QSFP_DD:
+	case SFF8024_ID_OSFP:
+	case SFF8024_ID_DSFP:
+	case SFF8024_ID_QSFP_PLUS_CMIS:
+	case SFF8024_ID_SFP_DD_CMIS:
+	case SFF8024_ID_SFP_PLUS_CMIS:
 		cmis_show_all_ioctl(id);
 		return;
 	}

@@ -225,6 +225,9 @@ static int eeprom_parse(struct cmd_context *ctx)
 	case SFF8024_ID_QSFP_DD:
 	case SFF8024_ID_OSFP:
 	case SFF8024_ID_DSFP:
+	case SFF8024_ID_QSFP_PLUS_CMIS:
+	case SFF8024_ID_SFP_DD_CMIS:
+	case SFF8024_ID_SFP_PLUS_CMIS:
 		return cmis_show_all_nl(ctx);
 #endif
 	default:

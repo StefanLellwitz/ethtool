@@ -6,8 +6,12 @@ man_MANS = ethtool.8
 EXTRA_DIST = LICENSE ethtool.8 ethtool.spec.in aclocal.m4 ChangeLog autogen.sh
 
 sbin_PROGRAMS = ethtool
-ethtool_SOURCES = ethtool.c uapi/linux/ethtool.h internal.h \
+ethtool_SOURCES = ethtool.c uapi/linux/const.h uapi/linux/ethtool.h internal.h \
 		  uapi/linux/net_tstamp.h uapi/linux/if.h uapi/linux/hdlc/ioctl.h \
+		  uapi/linux/if_addr.h uapi/linux/if_ether.h uapi/linux/if_link.h \
+		  uapi/linux/libc-compat.h uapi/linux/net_tstamp.h uapi/linux/neighbour.h \
+		  uapi/linux/posix_types.h uapi/linux/rtnetlink.h uapi/linux/socket.h \
+		  uapi/linux/stddef.h uapi/linux/types.h \
 		  rxclass.c common.c common.h \
 		  json_writer.c json_writer.h json_print.c json_print.h \
 		  list.h

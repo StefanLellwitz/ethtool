@@ -162,6 +162,15 @@ void sff8024_show_identifier(const __u8 *id, int id_offset)
 	case SFF8024_ID_DSFP:
 		printf(" (DSFP Dual Small Form Factor Pluggable Transceiver)\n");
 		break;
+	case SFF8024_ID_QSFP_PLUS_CMIS:
+		printf(" (QSFP+ or later with Common Management Interface Specification (CMIS))\n");
+		break;
+	case SFF8024_ID_SFP_DD_CMIS:
+		printf(" (SFP-DD Double Density 2X Pluggable Transceiver with Common Management Interface Specification (CMIS))\n");
+		break;
+	case SFF8024_ID_SFP_PLUS_CMIS:
+		printf(" (SFP+ and later with Common Management Interface Specification (CMIS))\n");
+		break;
 	default:
 		printf(" (reserved or unknown)\n");
 		break;
