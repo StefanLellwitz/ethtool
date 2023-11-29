@@ -1,3 +1,9 @@
+ethtool (1:6.6-1) UNRELEASED; urgency=medium
+
+  * New upstream release: 6.6
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 29 Nov 2023 16:51:15 +0100
+
 ethtool (1:6.5-2) experimental; urgency=medium
 
   * d/rules: Install ethtool in /usr/sbin
