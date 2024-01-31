@@ -1,9 +1,9 @@
-ethtool (1:6.7-1) UNRELEASED; urgency=medium
+ethtool (1:6.7-1) unstable; urgency=medium
 
   * New upstream release: 6.7
   * Update copyright years for debian/* packaging files
 
- -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 31 Jan 2024 07:05:59 +0100
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 31 Jan 2024 08:37:15 +0100
 
 ethtool (1:6.6-1) unstable; urgency=medium
 
