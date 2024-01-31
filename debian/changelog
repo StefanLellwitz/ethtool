@@ -1,6 +1,7 @@
 ethtool (1:6.7-1) UNRELEASED; urgency=medium
 
   * New upstream release: 6.7
+  * Update copyright years for debian/* packaging files
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 31 Jan 2024 07:05:59 +0100
 

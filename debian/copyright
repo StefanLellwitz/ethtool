@@ -165,7 +165,7 @@ Files: debian/*
 Copyright: 2001-2005, Eric Delaunay <delaunay@debian.org>
            2006-2010, Anibal Monsalve Salazar <anibal@debian.org>
            2008-2020, Ben Hutchings <ben@decadent.org.uk>
-           2022-2023, Salvatore Bonaccorso <carnil@debian.org>
+           2022-2024, Salvatore Bonaccorso <carnil@debian.org>
 License: GPL-2
 
 License: GPL-2
