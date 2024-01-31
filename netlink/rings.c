@@ -116,6 +116,22 @@ int nl_gring(struct cmd_context *ctx)
 
 /* RINGS_SET */
 
+static const struct lookup_entry_u8 tcp_data_split_values[] = {
+	{
+		.arg		= "auto",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_UNKNOWN,
+	},
+	{
+		.arg		= "off",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_DISABLED,
+	},
+	{
+		.arg		= "on",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_ENABLED,
+	},
+	{}
+};
+
 static const struct param_parser sring_params[] = {
 	{
 		.arg		= "rx",
@@ -152,6 +168,13 @@ static const struct param_parser sring_params[] = {
 		.type           = ETHTOOL_A_RINGS_RX_BUF_LEN,
 		.handler        = nl_parse_direct_u32,
 		.min_argc       = 1,
+	},
+	{
+		.arg		= "tcp-data-split",
+		.type		= ETHTOOL_A_RINGS_TCP_DATA_SPLIT,
+		.handler	= nl_parse_lookup_u8,
+		.handler_data	= tcp_data_split_values,
+		.min_argc	= 1,
 	},
 	{
 		.arg            = "cqe-size",

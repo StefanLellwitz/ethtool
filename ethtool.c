@@ -5748,6 +5748,7 @@ static const struct option args[] = {
 			  "		[ rx-jumbo N ]\n"
 			  "		[ tx N ]\n"
 			  "		[ rx-buf-len N ]\n"
+			  "		[ tcp-data-split auto|on|off ]\n"
 			  "		[ cqe-size N ]\n"
 			  "		[ tx-push on|off ]\n"
 			  "		[ rx-push on|off ]\n"

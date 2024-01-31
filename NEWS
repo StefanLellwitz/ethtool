@@ -1,4 +1,10 @@
-Version 6.6 - November, 23, 2023
+Version 6.7 - January 29, 2024
+	* Feature: support for setting TCP data split
+	* Fix: fix new gcc14 warning
+	* Fix: fix SFF-8472 transceiver module identification (-m)
+	* Misc: code cleanup
+
+Version 6.6 - November 23, 2023
 	* Feature: support for more CMIS transceiver modules (-m)
 	* Fix: fix build on systems with old kernel uapi headers
 

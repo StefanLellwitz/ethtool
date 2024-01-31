@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "November 2023" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "January 2024" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -202,6 +202,7 @@ ethtool \- query or control network driver and hardware settings
 .BN rx\-jumbo
 .BN tx
 .BN rx\-buf\-len
+.B3 tcp\-data\-split auto on off
 .BN cqe\-size
 .BN tx\-push
 .BN rx\-push
@@ -628,6 +629,9 @@ Changes the number of ring entries for the Tx ring.
 .TP
 .BI rx\-buf\-len \ N
 Changes the size of a buffer in the Rx ring.
+.TP
+.BI tcp\-data\-split \ auto|on|off
+Specifies the state of TCP data split.
 .TP
 .BI cqe\-size \ N
 Changes the size of completion queue event.

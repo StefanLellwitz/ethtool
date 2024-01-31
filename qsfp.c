@@ -985,11 +985,12 @@ void sff8636_show_all_ioctl(const __u8 *id, __u32 eeprom_len)
 	case SFF8024_ID_SFP_DD_CMIS:
 	case SFF8024_ID_SFP_PLUS_CMIS:
 		cmis_show_all_ioctl(id);
-		return;
+		break;
+	default:
+		sff8636_memory_map_init_buf(&map, id, eeprom_len);
+		sff8636_show_all_common(&map);
+		break;
 	}
-
-	sff8636_memory_map_init_buf(&map, id, eeprom_len);
-	sff8636_show_all_common(&map);
 }
 
 static void sff8636_request_init(struct ethtool_module_eeprom *request, u8 page,

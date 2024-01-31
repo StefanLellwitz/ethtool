@@ -216,6 +216,8 @@ static int eeprom_parse(struct cmd_context *ctx)
 
 	switch (request.data[0]) {
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
+	case SFF8024_ID_GBIC:
+	case SFF8024_ID_SOLDERED_MODULE:
 	case SFF8024_ID_SFP:
 		return sff8079_show_all_nl(ctx);
 	case SFF8024_ID_QSFP:
