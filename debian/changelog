@@ -1,6 +1,7 @@
 ethtool (1:6.9-1) UNRELEASED; urgency=medium
 
   * New upstream release: 6.9
+  * Declare compliance with Debian policy 4.7.0
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 25 May 2024 16:52:47 +0200
 
