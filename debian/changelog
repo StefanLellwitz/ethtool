@@ -1,10 +1,10 @@
-ethtool (1:6.9-1) UNRELEASED; urgency=medium
+ethtool (1:6.9-1) unstable; urgency=medium
 
   * New upstream release: 6.9
   * Declare compliance with Debian policy 4.7.0
   * debian/control: Replace Build-Depends on pkg-config with pkgconf
 
- -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 25 May 2024 16:52:47 +0200
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 25 May 2024 17:17:29 +0200
 
 ethtool (1:6.7-1) unstable; urgency=medium
 
