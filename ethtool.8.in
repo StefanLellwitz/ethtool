@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "January 2024" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "May 2024" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -351,6 +351,7 @@ ethtool \- query or control network driver and hardware settings
 .RB ...\ | \ default \ ]
 .RB [ hfunc
 .IR FUNC ]
+.B2 xfrm symmetric-xor none
 .RB [ context
 .I CTX
 .RB |\  new ]
@@ -565,6 +566,10 @@ Turns on debugging messages. Argument is interpreted as a mask:
 nokeep;
 lB	l.
 0x01  Parser information
+0x02  Summary of netlink messages
+0x04  Hex dump of sent netlink messages
+0x08  Hex dump of received netlink messages
+0x10  Structure of netlink messages
 .TE
 .TP
 .BI \-\-json
@@ -1200,6 +1205,19 @@ even if a nibble is zero.
 .BI hfunc
 Sets RSS hash function of the specified network device.
 List of RSS hash functions which kernel supports is shown as a part of the --show-rxfh command output.
+.TP
+.BI xfrm
+Sets the RSS input transformation. Currently, only the
+.B symmetric-xor
+transformation is supported where the NIC XORs the L3 and/or L4 source and
+destination fields (as selected by
+.B --config-nfc rx-flow-hash
+) before passing them to the hash algorithm. The RSS hash function will
+then yield the same hash for the other flow direction where the source and
+destination fields are swapped (i.e. Symmetric RSS). Note that XORing the
+input parameters reduces the entropy of the input set and the hash algorithm
+could potentially be exploited. Switch off (default) by
+.B xfrm none.
 .TP
 .BI start\  N
 For the \fBequal\fR and \fBweight\fR options, sets the starting receive queue

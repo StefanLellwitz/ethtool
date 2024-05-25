@@ -79,6 +79,8 @@ _ethtool_flow_type()
 	local types='ah4 ah6 esp4 esp6 ether sctp4 sctp6 tcp4 tcp6 udp4 udp6'
 	if [ "${1-}" != --hash ]; then
 		types="$types ip4 ip6"
+	else
+		types="gtpc4 gtpc6 gtpc4t gtpc6t gtpu4 gtpu6 gtpu4e gtpu6e gtpu4u gtpu6u gtpu4d gtpu6d $types"
 	fi
 	COMPREPLY=( $( compgen -W "$types" -- "$cur" ) )
 }
@@ -171,7 +173,7 @@ _ethtool_change()
 			return ;;
 		wol)
 			# $cur is a set of wol type characters.
-			_ethtool_compgen_letterset p u m b a g s f d
+			_ethtool_compgen_letterset p u m b a g s f d e
 			return ;;
 		xcvr)
 			COMPREPLY=( $( compgen -W 'internal external' -- "$cur" ) )
@@ -483,7 +485,7 @@ _ethtool_config_nfc()
 					_ethtool_flow_type --hash
 					return ;;
 				5)
-					_ethtool_compgen_letterset m v t s d f n r
+					_ethtool_compgen_letterset m v t s d f n r e
 					return ;;
 				6)
 					COMPREPLY=( $( compgen -W context -- "$cur" ) )

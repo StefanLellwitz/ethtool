@@ -1,3 +1,9 @@
+Version 6.9 - May 23, 2024
+	* Feature: support for rx-flow-hash gtp (-N)
+	* Feature: support for RSS input transformation (-X)
+	* Fix: typo in coalescing output (-c)
+	* Fix: document all debugging flags in man page
+
 Version 6.7 - January 29, 2024
 	* Feature: support for setting TCP data split
 	* Fix: fix new gcc14 warning

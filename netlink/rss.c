@@ -21,7 +21,8 @@ struct cb_args {
 
 void dump_json_rss_info(struct cmd_context *ctx, u32 *indir_table,
 			u32 indir_size, u8 *hkey, u32 hkey_size,
-			const struct stringset *hash_funcs, u8 hfunc)
+			const struct stringset *hash_funcs, u8 hfunc,
+			u32 input_xfrm)
 {
 	unsigned int i;
 
@@ -46,6 +47,12 @@ void dump_json_rss_info(struct cmd_context *ctx, u32 *indir_table,
 			if (hfunc & (1 << i)) {
 				print_string(PRINT_JSON, "rss-hash-function",
 					     NULL, get_string(hash_funcs, i));
+				open_json_object("rss-input-transformation");
+				print_bool(PRINT_JSON, "symmetric-xor", NULL,
+					   (input_xfrm & RXH_XFRM_SYM_XOR) ?
+					   true : false);
+
+				close_json_object();
 				break;
 			}
 		}
@@ -89,6 +96,7 @@ int rss_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	const struct stringset *hash_funcs;
 	u32 rss_hfunc = 0, indir_size;
 	u32 *indir_table = NULL;
+	u32 input_xfrm = 0;
 	u8 *hkey = NULL;
 	bool silent;
 	int err_ret;
@@ -117,6 +125,9 @@ int rss_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		hkey_bytes = mnl_attr_get_payload_len(tb[ETHTOOL_A_RSS_HKEY]);
 		hkey = mnl_attr_get_payload(tb[ETHTOOL_A_RSS_HKEY]);
 	}
+
+	if (tb[ETHTOOL_A_RSS_INPUT_XFRM])
+		input_xfrm = mnl_attr_get_u32(tb[ETHTOOL_A_RSS_INPUT_XFRM]);
 
 	/* Fetch RSS hash functions and their status and print */
 	if (!nlctx->is_monitor) {
@@ -153,7 +164,8 @@ int rss_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	indir_size = indir_bytes / sizeof(u32);
 	if (is_json_context()) {
 		dump_json_rss_info(nlctx->ctx, (u32 *)indir_table, indir_size,
-				   hkey, hkey_bytes, hash_funcs, rss_hfunc);
+				   hkey, hkey_bytes, hash_funcs, rss_hfunc,
+				   input_xfrm);
 	} else {
 		print_indir_table(nlctx->ctx, args->num_rings,
 				  indir_size, (u32 *)indir_table);
@@ -167,6 +179,9 @@ int rss_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 			printf("    %s: %s\n", get_string(hash_funcs, i),
 			       (rss_hfunc & (1 << i)) ? "on" : "off");
 		}
+		printf("RSS input transformation:\n");
+		printf("    symmetric-xor: %s\n",
+		       (input_xfrm & RXH_XFRM_SYM_XOR) ? "on" : "off");
 	}
 
 	return MNL_CB_OK;
