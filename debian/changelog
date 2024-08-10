@@ -1,3 +1,9 @@
+ethtool (1:6.10-1) UNRELEASED; urgency=medium
+
+  * New upstream release: 6.10
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 10 Aug 2024 07:08:57 +0200
+
 ethtool (1:6.9-1) unstable; urgency=medium
 
   * New upstream release: 6.9
