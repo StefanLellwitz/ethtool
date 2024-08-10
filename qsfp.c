@@ -1038,8 +1038,15 @@ sff8636_memory_map_init_pages(struct cmd_context *ctx,
 
 	sff8636_request_init(&request, 0x3, SFF8636_PAGE_SIZE);
 	ret = nl_get_eeprom_page(ctx, &request);
-	if (ret < 0)
-		return ret;
+	if (ret < 0) {
+		/* Page 03h is not available due to a bug in the driver.
+		 * This is a non-fatal error and sff8636_dom_parse()
+		 * handles this correctly.
+		 */
+		fprintf(stderr, "Failed to read Upper Page 03h, driver error?\n");
+		return 0;
+	}
+
 	map->page_03h = request.data - SFF8636_PAGE_SIZE;
 
 	return 0;

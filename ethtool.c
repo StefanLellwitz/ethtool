@@ -70,6 +70,18 @@ static void exit_bad_args(void)
 	exit(1);
 }
 
+static void exit_bad_args_info(const char *info) __attribute__((noreturn));
+
+static void exit_bad_args_info(const char *info)
+{
+	fprintf(stderr,
+		"ethtool: bad command line argument(s)\n"
+		"%s\n"
+		"For more information run ethtool -h\n",
+		info);
+	exit(1);
+}
+
 static void exit_nlonly_param(const char *name) __attribute__((noreturn));
 
 static void exit_nlonly_param(const char *name)
@@ -4261,6 +4273,8 @@ static int do_srxfh(struct cmd_context *ctx)
 			++arg_num;
 		} else if (!strcmp(ctx->argp[arg_num], "xfrm")) {
 			++arg_num;
+			if (!ctx->argp[arg_num])
+				exit_bad_args();
 			if (!strcmp(ctx->argp[arg_num], "symmetric-xor"))
 				req_input_xfrm = RXH_XFRM_SYM_XOR;
 			else if (!strcmp(ctx->argp[arg_num], "none"))
@@ -4270,6 +4284,8 @@ static int do_srxfh(struct cmd_context *ctx)
 			++arg_num;
 		} else if (!strcmp(ctx->argp[arg_num], "context")) {
 			++arg_num;
+			if (!ctx->argp[arg_num])
+				exit_bad_args();
 			if(!strcmp(ctx->argp[arg_num], "new"))
 				rss_context = ETH_RXFH_CONTEXT_ALLOC;
 			else
@@ -5731,6 +5747,7 @@ static const struct option args[] = {
 	{
 		/* "default" entry when no switch is used */
 		.opts	= "",
+		.json	= true,
 		.func	= do_gset,
 		.nlfunc	= nl_gset,
 		.help	= "Display standard information about device",
@@ -6040,6 +6057,7 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "--show-eee",
+		.json	= true,
 		.func	= do_geee,
 		.nlfunc	= nl_geee,
 		.help	= "Show EEE settings",
@@ -6216,6 +6234,7 @@ static const struct option args[] = {
 		.nlfunc	= nl_spse,
 		.help	= "Set Power Sourcing Equipment settings",
 		.xhelp	= "		[ podl-pse-admin-control enable|disable ]\n"
+			  "		[ c33-pse-admin-control enable|disable ]\n"
 	},
 	{
 		.opts	= "-h|--help",
@@ -6555,13 +6574,13 @@ int main(int argc, char **argp)
 			exit_bad_args();
 	}
 	if (ctx.json && !args[k].json)
-		exit_bad_args();
+		exit_bad_args_info("JSON output not available for this subcommand");
 	ctx.argc = argc;
 	ctx.argp = argp;
 	netlink_run_handler(&ctx, args[k].nlchk, args[k].nlfunc, !args[k].func);
 
 	if (ctx.json) /* no IOCTL command supports JSON output */
-		exit_bad_args();
+		exit_nlonly_param("--json");
 
 	ret = ioctl_init(&ctx, args[k].no_dev);
 	if (ret)

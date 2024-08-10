@@ -59,12 +59,12 @@ endif
 TESTS = test-cmdline
 check_PROGRAMS = test-cmdline
 test_cmdline_SOURCES = test-cmdline.c test-common.c $(ethtool_SOURCES) 
-test_cmdline_CFLAGS = -DTEST_ETHTOOL
+test_cmdline_CFLAGS = -D_POSIX_C_SOURCE=200809L -DTEST_ETHTOOL
 if !ETHTOOL_ENABLE_NETLINK
 TESTS += test-features
 check_PROGRAMS += test-features
 test_features_SOURCES = test-features.c test-common.c $(ethtool_SOURCES) 
-test_features_CFLAGS = -DTEST_ETHTOOL
+test_features_CFLAGS = -D_POSIX_C_SOURCE=200809L -DTEST_ETHTOOL
 endif
 
 dist-hook:

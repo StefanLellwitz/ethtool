@@ -1,3 +1,14 @@
+Version 6.10 - August 9, 2024
+	* Feature: suport for PoE in PSE (--show-pse and --set-pse)
+	* Feature: add statistics support to tsinfo (-T)
+	* Feature: add JSON output to base command (no option)
+	* Feature: add JSON output to EEE info (--show-eee)
+	* Fix: qsfp: better handling on page 03h read failure (-m)
+	* Fix: handle zero arguments for module eeprom dump (-m)
+	* Fix: check for missing arguments in do_srxfh() (-X)
+	* Misc: compiler warnings in "make check"
+	* Misc: more descriptive error when JSON output is not available
+
 Version 6.9 - May 23, 2024
 	* Feature: support for rx-flow-hash gtp (-N)
 	* Feature: support for RSS input transformation (-X)

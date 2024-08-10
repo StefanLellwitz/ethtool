@@ -22,6 +22,7 @@
 #define ETH_I2C_MAX_ADDRESS	0x7F
 
 struct cmd_params {
+	unsigned long present;
 	u8 dump_hex;
 	u8 dump_raw;
 	u32 offset;
@@ -29,6 +30,14 @@ struct cmd_params {
 	u32 page;
 	u32 bank;
 	u32 i2c_address;
+};
+
+enum {
+	PARAM_OFFSET = 2,
+	PARAM_LENGTH,
+	PARAM_PAGE,
+	PARAM_BANK,
+	PARAM_I2C,
 };
 
 static const struct param_parser getmodule_params[] = {
@@ -44,31 +53,31 @@ static const struct param_parser getmodule_params[] = {
 		.dest_offset	= offsetof(struct cmd_params, dump_raw),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_OFFSET] = {
 		.arg		= "offset",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, offset),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_LENGTH] = {
 		.arg		= "length",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, length),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_PAGE] = {
 		.arg		= "page",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, page),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_BANK] = {
 		.arg		= "bank",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, bank),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_I2C] = {
 		.arg		= "i2c",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, i2c_address),
@@ -267,15 +276,18 @@ int nl_getmodule(struct cmd_context *ctx)
 	 * ioctl. Netlink can only request specific pages.
 	 */
 	if ((getmodule_cmd_params.dump_hex || getmodule_cmd_params.dump_raw) &&
-	    !getmodule_cmd_params.page && !getmodule_cmd_params.bank &&
-	    !getmodule_cmd_params.i2c_address) {
+	    !(getmodule_cmd_params.present & (1 << PARAM_PAGE |
+					      1 << PARAM_BANK |
+					      1 << PARAM_I2C))) {
 		nlctx->ioctl_fallback = true;
 		return -EOPNOTSUPP;
 	}
 
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
-	if (getmodule_cmd_params.page || getmodule_cmd_params.bank ||
-	    getmodule_cmd_params.offset || getmodule_cmd_params.length)
+	if (getmodule_cmd_params.present & (1 << PARAM_PAGE |
+					    1 << PARAM_BANK |
+					    1 << PARAM_OFFSET |
+					    1 << PARAM_LENGTH))
 #endif
 		getmodule_cmd_params.dump_hex = true;
 

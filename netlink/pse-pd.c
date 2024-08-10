@@ -54,6 +54,41 @@ static const char *podl_pse_pw_d_status_name(u32 val)
 	}
 }
 
+static const char *c33_pse_admin_state_name(u32 val)
+{
+	switch (val) {
+	case ETHTOOL_C33_PSE_ADMIN_STATE_UNKNOWN:
+		return "unknown";
+	case ETHTOOL_C33_PSE_ADMIN_STATE_DISABLED:
+		return "disabled";
+	case ETHTOOL_C33_PSE_ADMIN_STATE_ENABLED:
+		return "enabled";
+	default:
+		return "unsupported";
+	}
+}
+
+static const char *c33_pse_pw_d_status_name(u32 val)
+{
+	switch (val) {
+	case ETHTOOL_C33_PSE_PW_D_STATUS_UNKNOWN:
+		return "unknown";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_DISABLED:
+		return "disabled";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_SEARCHING:
+		return "searching";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_DELIVERING:
+		return "delivering power";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_TEST:
+		return "test";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_FAULT:
+		return "fault";
+	case ETHTOOL_C33_PSE_PW_D_STATUS_OTHERFAULT:
+		return "otherfault";
+	default:
+		return "unsupported";
+	}
+}
 int pse_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 {
 	const struct nlattr *tb[ETHTOOL_A_PSE_MAX + 1] = {};
@@ -98,6 +133,24 @@ int pse_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 			     podl_pse_pw_d_status_name(val));
 	}
 
+	if (tb[ETHTOOL_A_C33_PSE_ADMIN_STATE]) {
+		u32 val;
+
+		val = mnl_attr_get_u32(tb[ETHTOOL_A_C33_PSE_ADMIN_STATE]);
+		print_string(PRINT_ANY, "c33-pse-admin-state",
+			     "Clause 33 PSE Admin State: %s\n",
+			     c33_pse_admin_state_name(val));
+	}
+
+	if (tb[ETHTOOL_A_C33_PSE_PW_D_STATUS]) {
+		u32 val;
+
+		val = mnl_attr_get_u32(tb[ETHTOOL_A_C33_PSE_PW_D_STATUS]);
+		print_string(PRINT_ANY, "c33-pse-power-detection-status",
+			     "Clause 33 PSE Power Detection Status: %s\n",
+			     c33_pse_pw_d_status_name(val));
+	}
+
 	close_json_object();
 
 	return MNL_CB_OK;
@@ -138,12 +191,25 @@ static const struct lookup_entry_u32 podl_pse_admin_control_values[] = {
 	{}
 };
 
+static const struct lookup_entry_u32 c33_pse_admin_control_values[] = {
+	{ .arg = "enable",	.val = ETHTOOL_C33_PSE_ADMIN_STATE_ENABLED },
+	{ .arg = "disable",	.val = ETHTOOL_C33_PSE_ADMIN_STATE_DISABLED },
+	{}
+};
+
 static const struct param_parser spse_params[] = {
 	{
 		.arg		= "podl-pse-admin-control",
 		.type		= ETHTOOL_A_PODL_PSE_ADMIN_CONTROL,
 		.handler	= nl_parse_lookup_u32,
 		.handler_data	= podl_pse_admin_control_values,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "c33-pse-admin-control",
+		.type		= ETHTOOL_A_C33_PSE_ADMIN_CONTROL,
+		.handler	= nl_parse_lookup_u32,
+		.handler_data	= c33_pse_admin_control_values,
 		.min_argc	= 1,
 	},
 	{}

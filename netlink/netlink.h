@@ -98,7 +98,7 @@ int module_reply_cb(const struct nlmsghdr *nlhdr, void *data);
 int dump_link_modes(struct nl_context *nlctx, const struct nlattr *bitset,
 		    bool mask, unsigned int class, const char *before,
 		    const char *between, const char *after,
-		    const char *if_none);
+		    const char *if_none, const char *json_key);
 
 static inline void show_u32(const char *key,
 			    const char *fmt,
