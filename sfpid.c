@@ -494,8 +494,10 @@ int sff8079_show_all_nl(struct cmd_context *ctx)
 	/* Read A2h page */
 	ret = sff8079_get_eeprom_page(ctx, SFF8079_I2C_ADDRESS_HIGH,
 				      buf + ETH_MODULE_SFF_8079_LEN);
-	if (ret)
+	if (ret) {
+		fprintf(stderr, "Failed to read Page A2h.\n");
 		goto out;
+	}
 
 	sff8472_show_all(buf);
 out:

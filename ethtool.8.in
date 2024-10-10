@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "August 2024" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "October 2024" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -135,6 +135,9 @@ ethtool \- query or control network driver and hardware settings
 .HP
 .B ethtool
 .BN --debug
+.I args
+.HP
+.B ethtool [--disable-netlink]
 .I args
 .HP
 .B ethtool [--json]
@@ -536,6 +539,15 @@ ethtool \- query or control network driver and hardware settings
 .I devname
 .RB [ podl\-pse\-admin\-control
 .BR enable | disable ]
+.RB [ c33\-pse\-admin\-control
+.BR enable | disable ]
+.HP
+.B ethtool \-\-flash\-module\-firmware
+.I devname
+.BI file
+.IR FILE
+.RB [ pass
+.IR PASS ]
 .
 .\" Adjust lines (i.e. full justification) and hyphenate.
 .ad
@@ -571,6 +583,9 @@ lB	l.
 0x08  Hex dump of received netlink messages
 0x10  Structure of netlink messages
 .TE
+.TP
+.BI \-\-disable-netlink
+Do not use netlink and fall back to the ioctl interface if possible.
 .TP
 .BI \-\-json
 Output results in JavaScript Object Notation (JSON). Only a subset of
@@ -852,6 +867,7 @@ lB	l	lB.
 0x8000000000000000000000000	10baseT1S Full
 0x10000000000000000000000000	10baseT1S Half
 0x20000000000000000000000000	10baseT1S_P2MP Half
+0x40000000000000000000000000	10baseT1BRR Full
 0x004	100baseT Half
 0x008	100baseT Full
 0x80000000000000000	100baseT1 Full
@@ -1760,7 +1776,21 @@ status depend on internal PSE state machine and automatic PD classification
 support. It corresponds to IEEE 802.3-2018 30.15.1.1.3
 (aPoDLPSEPowerDetectionStatus) with potential values being
 .B disabled, searching, delivering power, sleep, idle, error
-.RE
+.TP
+.B c33-pse-admin-state
+This attribute indicates the operational status of c33 PSE functions, which
+can be modified using the
+.B c33-pse-admin-control
+parameter. It corresponds to IEEE 802.3-2022 30.9.1.1.2 (aPSEAdminState),
+with potential values being
+.B enabled, disabled
+.TP
+.B c33-pse-power-detection-status
+This attribute indicates the power detection status of the c33 PSE. The
+status depend on internal PSE state machine and automatic PD classification
+support. It corresponds to IEEE 802.3-2022 30.9.1.1.5
+(aPSEPowerDetectionStatus) with potential values being
+.B disabled, searching, delivering power, test, fault, other fault
 
 .RE
 .TP
@@ -1771,6 +1801,32 @@ Set Power Sourcing Equipment (PSE) parameters.
 .A2 podl-pse-admin-control \ enable disable
 This parameter manages PoDL PSE Admin operations in accordance with the IEEE
 802.3-2018 30.15.1.2.1 (acPoDLPSEAdminControl) specification.
+.TP
+.A2 c33-pse-admin-control \ enable disable
+This parameter manages c33 PSE Admin operations in accordance with the IEEE
+802.3-2022 30.9.1.2.1 (acPSEAdminControl) specification.
+
+.RE
+.TP
+.B \-\-flash\-module\-firmware
+Flash the transceiver module's firmware. The firmware update process is
+composed from three logical steps. Downloading a firmware image to the
+transceiver module, running the image and committing the image so that it is
+run upon reset. When flash command is given, the firmware update process is
+performed in its entirety in that order.
+.RS 4
+.TP
+.BI file \ FILE
+Specifies the filename of the transceiver module firmware image. The firmware
+must first be installed in one of the directories where the kernel firmware
+loader or firmware agent will look, such as /lib/firmware. The firmware image
+is downloaded to the transceiver module, validated, run and committed.
+.RE
+.RS 4
+.TP
+.BI pass \ PASS
+Optional transceiver module password that might be required as part of the
+transceiver module firmware update process.
 
 .SH BUGS
 Not supported (in part or whole) on all network drivers.

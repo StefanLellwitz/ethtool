@@ -177,6 +177,7 @@ static const struct link_mode_info link_modes[] = {
 	[ETHTOOL_LINK_MODE_10baseT1S_Full_BIT]		= __REAL(10),
 	[ETHTOOL_LINK_MODE_10baseT1S_Half_BIT]		= __HALF_DUPLEX(10),
 	[ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT]	= __HALF_DUPLEX(10),
+	[ETHTOOL_LINK_MODE_10baseT1BRR_Full_BIT]	= __REAL(10),
 };
 const unsigned int link_modes_count = ARRAY_SIZE(link_modes);
 
@@ -527,7 +528,7 @@ int linkmodes_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		uint32_t val = mnl_attr_get_u32(tb[ETHTOOL_A_LINKMODES_LANES]);
 
 		print_banner(nlctx);
-		print_uint(PRINT_ANY, "lanes", "\tLanes: %s\n", val);
+		print_uint(PRINT_ANY, "lanes", "\tLanes: %u\n", val);
 	}
 	if (tb[ETHTOOL_A_LINKMODES_DUPLEX]) {
 		uint8_t val = mnl_attr_get_u8(tb[ETHTOOL_A_LINKMODES_DUPLEX]);

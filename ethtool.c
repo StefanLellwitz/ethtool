@@ -519,6 +519,7 @@ static void init_global_link_mode_masks(void)
 		ETHTOOL_LINK_MODE_10baseT1S_Full_BIT,
 		ETHTOOL_LINK_MODE_10baseT1S_Half_BIT,
 		ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
+		ETHTOOL_LINK_MODE_10baseT1BRR_Full_BIT,
 	};
 	static const enum ethtool_link_mode_bit_indices
 		additional_advertised_flags_bits[] = {
@@ -779,6 +780,8 @@ static void dump_link_caps(const char *prefix, const char *an_prefix,
 		  "10baseT1S/Half" },
 		{ 0, ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
 		  "10baseT1S/Half" },
+		{ 0, ETHTOOL_LINK_MODE_10baseT1BRR_Full_BIT,
+		  "10baseT1BRR/Full" },
 	};
 	int indent;
 	int did1, new_line_pend;
@@ -6237,6 +6240,13 @@ static const struct option args[] = {
 			  "		[ c33-pse-admin-control enable|disable ]\n"
 	},
 	{
+		.opts	= "--flash-module-firmware",
+		.nlfunc	= nl_flash_module_fw,
+		.help	= "Flash transceiver module firmware",
+		.xhelp	= "		file FILE\n"
+			  "		[ pass PASS ]\n"
+	},
+	{
 		.opts	= "-h|--help",
 		.no_dev	= true,
 		.func	= show_usage,
@@ -6470,7 +6480,7 @@ static int do_perqueue(struct cmd_context *ctx)
 	return 0;
 }
 
-static int ioctl_init(struct cmd_context *ctx, bool no_dev)
+int ioctl_init(struct cmd_context *ctx, bool no_dev)
 {
 	if (no_dev) {
 		ctx->fd = -1;
@@ -6525,6 +6535,12 @@ int main(int argc, char **argp)
 
 			argp += 2;
 			argc -= 2;
+			continue;
+		}
+		if (*argp && !strcmp(*argp, "--disable-netlink")) {
+			ctx.nl_disable = true;
+			argp += 1;
+			argc -= 1;
 			continue;
 		}
 		if (*argp && !strcmp(*argp, "--json")) {

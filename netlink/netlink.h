@@ -175,4 +175,20 @@ static inline int netlink_init_rtnl_socket(struct nl_context *nlctx)
 	return nlsock_init(nlctx, &nlctx->rtnl_socket, NETLINK_ROUTE);
 }
 
+static inline uint64_t attr_get_uint(const struct nlattr *attr)
+{
+	switch (mnl_attr_get_payload_len(attr)) {
+	case sizeof(uint8_t):
+		return mnl_attr_get_u8(attr);
+	case sizeof(uint16_t):
+		return mnl_attr_get_u16(attr);
+	case sizeof(uint32_t):
+		return mnl_attr_get_u32(attr);
+	case sizeof(uint64_t):
+		return mnl_attr_get_u64(attr);
+	}
+
+	return -1ULL;
+}
+
 #endif /* ETHTOOL_NETLINK_INT_H__ */

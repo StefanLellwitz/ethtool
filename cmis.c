@@ -884,6 +884,129 @@ static void cmis_show_dom(const struct cmis_memory_map *map)
 		sff_show_thresholds(sd);
 }
 
+/* Print active and inactive firmware versions. Relevant documents:
+ * [1] CMIS Rev. 5, page 115, section 8.2.9, Table 8-14
+ * [2] CMIS Rev. 5, page 127, section 8.4.1, Table 8-37
+ */
+static void cmis_show_fw_version_common(const char *name, __u8 major,
+					__u8 minor)
+{
+	if (major == 0 && minor == 0) {
+		return;
+	} else if (major == 0xFF && minor == 0xFF) {
+		printf("\t%-41s : Invalid\n", name);
+		return;
+	}
+
+	printf("\t%-41s : %d.%d\n", name, major, minor);
+}
+
+static void cmis_show_fw_active_version(const struct cmis_memory_map *map)
+{
+	__u8 major = map->lower_memory[CMIS_MODULE_ACTIVE_FW_MAJOR_OFFSET];
+	__u8 minor = map->lower_memory[CMIS_MODULE_ACTIVE_FW_MINOR_OFFSET];
+
+	cmis_show_fw_version_common("Active firmware version", major, minor);
+}
+
+static void cmis_show_fw_inactive_version(const struct cmis_memory_map *map)
+{
+	__u8 major;
+	__u8 minor;
+
+	if (!map->page_01h)
+		return;
+
+	major = map->page_01h[CMIS_MODULE_INACTIVE_FW_MAJOR_OFFSET];
+	minor = map->page_01h[CMIS_MODULE_INACTIVE_FW_MINOR_OFFSET];
+	cmis_show_fw_version_common("Inactive firmware version", major, minor);
+}
+
+static void cmis_show_fw_version(const struct cmis_memory_map *map)
+{
+	cmis_show_fw_active_version(map);
+	cmis_show_fw_inactive_version(map);
+}
+
+static u8 cmis_cdb_instances_get(const struct cmis_memory_map *map)
+{
+	return (map->page_01h[CMIS_CDB_ADVER_OFFSET] &
+		CMIS_CDB_ADVER_INSTANCES_MASK) >> 6;
+}
+
+static bool cmis_cdb_is_supported(const struct cmis_memory_map *map)
+{
+	__u8 cdb_instances = cmis_cdb_instances_get(map);
+
+	/* Up to two CDB instances are supported. */
+	return cdb_instances == 1 || cdb_instances == 2;
+}
+
+static void cmis_show_cdb_instances(const struct cmis_memory_map *map)
+{
+	__u8 cdb_instances = cmis_cdb_instances_get(map);
+
+	printf("\t%-41s : %u\n", "CDB instances", cdb_instances);
+}
+
+static void cmis_show_cdb_mode(const struct cmis_memory_map *map)
+{
+	__u8 mode = map->page_01h[CMIS_CDB_ADVER_OFFSET] &
+		    CMIS_CDB_ADVER_MODE_MASK;
+
+	printf("\t%-41s : %s\n", "CDB background mode",
+	       mode ? "Supported" : "Not supported");
+}
+
+static void cmis_show_cdb_epl_pages(const struct cmis_memory_map *map)
+{
+	__u8 epl_pages = map->page_01h[CMIS_CDB_ADVER_OFFSET] &
+			 CMIS_CDB_ADVER_EPL_MASK;
+
+	printf("\t%-41s : %u\n", "CDB EPL pages", epl_pages);
+}
+
+static void cmis_show_cdb_rw_len(const struct cmis_memory_map *map)
+{
+	__u16 rw_len = map->page_01h[CMIS_CDB_ADVER_RW_LEN_OFFSET];
+
+	/* Maximum read / write length for CDB EPL pages and the LPL page in
+	 * units of 8 bytes, in addition to the minimum 8 bytes.
+	 */
+	rw_len = (rw_len + 1) * 8;
+	printf("\t%-41s : %u\n", "CDB Maximum EPL RW length", rw_len);
+	printf("\t%-41s : %u\n", "CDB Maximum LPL RW length",
+	       rw_len > CMIS_PAGE_SIZE ? CMIS_PAGE_SIZE : rw_len);
+}
+
+static void cmis_show_cdb_trigger(const struct cmis_memory_map *map)
+{
+	__u8 trigger = map->page_01h[CMIS_CDB_ADVER_TRIGGER_OFFSET] &
+		       CMIS_CDB_ADVER_TRIGGER_MASK;
+
+	/* Whether a CDB command can be triggered in a single write to the LPL
+	 * page, or by multiple writes ending with the writing of the CDB
+	 * Command Code (CMDID).
+	 */
+	printf("\t%-41s : %s\n", "CDB trigger method",
+	       trigger ? "Single write" : "Multiple writes");
+}
+
+/* Print CDB messaging support advertisement. Relevant documents:
+ * [1] CMIS Rev. 5, page 133, section 8.4.11
+ */
+static void cmis_show_cdb_adver(const struct cmis_memory_map *map)
+{
+	if (!map->page_01h || !cmis_cdb_is_supported(map))
+		return;
+
+	cmis_show_cdb_instances(map);
+	cmis_show_cdb_mode(map);
+	cmis_show_cdb_epl_pages(map);
+	cmis_show_cdb_rw_len(map);
+	cmis_show_cdb_trigger(map);
+}
+
 static void cmis_show_all_common(const struct cmis_memory_map *map)
 {
 	cmis_show_identifier(map);
@@ -900,6 +1023,8 @@ static void cmis_show_all_common(const struct cmis_memory_map *map)
 	cmis_show_mod_fault_cause(map);
 	cmis_show_mod_lvl_controls(map);
 	cmis_show_dom(map);
+	cmis_show_fw_version(map);
+	cmis_show_cdb_adver(map);
 }
 
 static void cmis_memory_map_init_buf(struct cmis_memory_map *map,
