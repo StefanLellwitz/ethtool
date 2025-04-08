@@ -546,7 +546,7 @@ int linkmodes_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 						(autoneg == AUTONEG_DISABLE) ? "off" : "on");
 		else
 			print_bool(PRINT_JSON, "auto-negotiation", NULL,
-				   autoneg == AUTONEG_DISABLE);
+				   autoneg != AUTONEG_DISABLE);
 	}
 	if (tb[ETHTOOL_A_LINKMODES_MASTER_SLAVE_CFG]) {
 		uint8_t val;
@@ -605,7 +605,7 @@ int linkinfo_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		uint8_t val = mnl_attr_get_u8(tb[ETHTOOL_A_LINKINFO_PHYADDR]);
 
 		print_banner(nlctx);
-		print_uint(PRINT_ANY, "phyad", "\tPHYAD: %x\n", val);
+		print_uint(PRINT_ANY, "phyad", "\tPHYAD: %u\n", val);
 	}
 	if (tb[ETHTOOL_A_LINKINFO_TRANSCEIVER]) {
 		uint8_t val;

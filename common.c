@@ -171,6 +171,8 @@ void dump_mdix(u8 mdix, u8 mdix_ctrl)
 		mdi_x_forced = true;
 	} else {
 		switch (mdix) {
+		case ETH_TP_MDI:
+			break;
 		case ETH_TP_MDI_X:
 			mdi_x = true;
 			break;

@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#include "../sff-common.h"
+#include "../module-common.h"
 #include "../qsfp.h"
 #include "../cmis.h"
 #include "../internal.h"
@@ -225,20 +225,20 @@ static int eeprom_parse(struct cmd_context *ctx)
 
 	switch (request.data[0]) {
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
-	case SFF8024_ID_GBIC:
-	case SFF8024_ID_SOLDERED_MODULE:
-	case SFF8024_ID_SFP:
+	case MODULE_ID_GBIC:
+	case MODULE_ID_SOLDERED_MODULE:
+	case MODULE_ID_SFP:
 		return sff8079_show_all_nl(ctx);
-	case SFF8024_ID_QSFP:
-	case SFF8024_ID_QSFP28:
-	case SFF8024_ID_QSFP_PLUS:
+	case MODULE_ID_QSFP:
+	case MODULE_ID_QSFP28:
+	case MODULE_ID_QSFP_PLUS:
 		return sff8636_show_all_nl(ctx);
-	case SFF8024_ID_QSFP_DD:
-	case SFF8024_ID_OSFP:
-	case SFF8024_ID_DSFP:
-	case SFF8024_ID_QSFP_PLUS_CMIS:
-	case SFF8024_ID_SFP_DD_CMIS:
-	case SFF8024_ID_SFP_PLUS_CMIS:
+	case MODULE_ID_QSFP_DD:
+	case MODULE_ID_OSFP:
+	case MODULE_ID_DSFP:
+	case MODULE_ID_QSFP_PLUS_CMIS:
+	case MODULE_ID_SFP_DD_CMIS:
+	case MODULE_ID_SFP_PLUS_CMIS:
 		return cmis_show_all_nl(ctx);
 #endif
 	default:

@@ -223,6 +223,7 @@ struct cmd_context {
 	bool json;		/* Output JSON, if supported */
 	bool nl_disable;	/* Disable netlink even if available */
 	bool show_stats;	/* include command-specific stats */
+	uint32_t phy_index;	/* the phy index this command targets */
 #ifdef ETHTOOL_ENABLE_NETLINK
 	struct nl_context *nlctx;	/* netlink context (opaque) */
 #endif

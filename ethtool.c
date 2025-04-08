@@ -3883,8 +3883,10 @@ static int do_srxclass(struct cmd_context *ctx)
 			nfccmd.flow_type |= FLOW_RSS;
 
 		err = send_ioctl(ctx, &nfccmd);
-		if (err < 0)
+		if (err < 0) {
 			perror("Cannot change RX network flow hashing options");
+			return 1;
+		}
 	} else if (!strcmp(ctx->argp[0], "flow-type")) {
 		struct ethtool_rx_flow_spec rx_rule_fs;
 		__u32 rss_context = 0;
@@ -4104,14 +4106,23 @@ static int do_grxfh(struct cmd_context *ctx)
 		return 1;
 	}
 
-	for (i = 0; i < hfuncs->len; i++)
+	for (i = 0; i < hfuncs->len; i++) {
 		printf("    %s: %s\n",
 		       (const char *)hfuncs->data + i * ETH_GSTRING_LEN,
 		       (rss->hfunc & (1 << i)) ? "on" : "off");
+		rss->hfunc &= ~(1 << i);
+	}
+	if (rss->hfunc)
+		printf("    Unknown hash function: 0x%x\n", rss->hfunc);
 
 	printf("RSS input transformation:\n");
 	printf("    symmetric-xor: %s\n",
 	       (rss->input_xfrm & RXH_XFRM_SYM_XOR) ? "on" : "off");
+	rss->input_xfrm &= ~RXH_XFRM_SYM_XOR;
+
+	if (rss->input_xfrm)
+		printf("    Unknown bits in RSS input transformation: 0x%x\n",
+		       rss->input_xfrm);
 
 out:
 	free(hfuncs);
@@ -4230,7 +4241,7 @@ static int do_srxfh(struct cmd_context *ctx)
 	u32 arg_num = 0, indir_bytes = 0;
 	u32 req_hfunc = 0;
 	u32 entry_size = sizeof(rss_head.rss_config[0]);
-	u32 req_input_xfrm = 0xff;
+	u32 req_input_xfrm = RXH_XFRM_NO_CHANGE;
 	u32 num_weights = 0;
 	u32 rss_context = 0;
 	int delete = 0;
@@ -5005,6 +5016,8 @@ static int do_getmodule(struct cmd_context *ctx)
 		    (eeprom->len != modinfo.eeprom_len)) {
 			geeprom_dump_hex = 1;
 		} else if (!geeprom_dump_hex) {
+			new_json_obj(ctx->json);
+			open_json_object(NULL);
 			switch (modinfo.type) {
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
 			case ETH_MODULE_SFF_8079:
@@ -5024,6 +5037,8 @@ static int do_getmodule(struct cmd_context *ctx)
 				geeprom_dump_hex = 1;
 				break;
 			}
+			close_json_object();
+			delete_json_obj();
 		}
 		if (geeprom_dump_hex)
 			dump_hex(stdout, eeprom->data,
@@ -5739,6 +5754,7 @@ struct option {
 	const char	*opts;
 	bool		no_dev;
 	bool		json;
+	bool		targets_phy;
 	int		(*func)(struct cmd_context *);
 	nl_chk_t	nlchk;
 	nl_func_t	nlfunc;
@@ -5971,7 +5987,19 @@ static const struct option args[] = {
 		.opts	= "-T|--show-time-stamping",
 		.func	= do_tsinfo,
 		.nlfunc	= nl_tsinfo,
-		.help	= "Show time stamping capabilities"
+		.help	= "Show time stamping capabilities",
+		.xhelp	= "		[ index N qualifier precise|approx ]\n"
+	},
+	{
+		.opts	= "--get-hwtimestamp-cfg",
+		.nlfunc	= nl_gtsconfig,
+		.help	= "Get selected hardware time stamping"
+	},
+	{
+		.opts	= "--set-hwtimestamp-cfg",
+		.nlfunc	= nl_stsconfig,
+		.help	= "Select hardware time stamping",
+		.xhelp	= "		[ index N qualifier precise|approx ]\n"
 	},
 	{
 		.opts	= "-x|--show-rxfh-indir|--show-rxfh",
@@ -6047,6 +6075,7 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "-m|--dump-module-eeprom|--module-info",
+		.json	= true,
 		.func	= do_getmodule,
 		.nlfunc = nl_getmodule,
 		.help	= "Query/Decode Module EEPROM information and optical diagnostics if available",
@@ -6158,12 +6187,14 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "--cable-test",
+		.targets_phy	= true,
 		.json	= true,
 		.nlfunc	= nl_cable_test,
 		.help	= "Perform a cable test",
 	},
 	{
 		.opts	= "--cable-test-tdr",
+		.targets_phy	= true,
 		.json	= true,
 		.nlfunc	= nl_cable_test_tdr,
 		.help	= "Print cable test time domain reflectrometery data",
@@ -6191,11 +6222,13 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "--get-plca-cfg",
+		.targets_phy	= true,
 		.nlfunc	= nl_plca_get_cfg,
 		.help	= "Get PLCA configuration",
 	},
 	{
 		.opts	= "--set-plca-cfg",
+		.targets_phy	= true,
 		.nlfunc	= nl_plca_set_cfg,
 		.help	= "Set PLCA configuration",
 		.xhelp  = "		[ enable on|off ]\n"
@@ -6207,6 +6240,7 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "--get-plca-status",
+		.targets_phy	= true,
 		.nlfunc	= nl_plca_get_status,
 		.help	= "Get PLCA status information",
 	},
@@ -6228,16 +6262,19 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "--show-pse",
+		.targets_phy	= true,
 		.json	= true,
 		.nlfunc	= nl_gpse,
 		.help	= "Show settings for Power Sourcing Equipment",
 	},
 	{
 		.opts	= "--set-pse",
+		.targets_phy	= true,
 		.nlfunc	= nl_spse,
 		.help	= "Set Power Sourcing Equipment settings",
 		.xhelp	= "		[ podl-pse-admin-control enable|disable ]\n"
 			  "		[ c33-pse-admin-control enable|disable ]\n"
+			  "		[ c33-pse-avail-pw-limit N ]\n"
 	},
 	{
 		.opts	= "--flash-module-firmware",
@@ -6245,6 +6282,11 @@ static const struct option args[] = {
 		.help	= "Flash transceiver module firmware",
 		.xhelp	= "		file FILE\n"
 			  "		[ pass PASS ]\n"
+	},
+	{
+		.opts	= "--show-phys",
+		.nlfunc	= nl_get_phy,
+		.help	= "List PHYs"
 	},
 	{
 		.opts	= "-h|--help",
@@ -6270,7 +6312,8 @@ static int show_usage(struct cmd_context *ctx __maybe_unused)
 	fprintf(stdout,	"Usage:\n");
 	for (i = 0; args[i].opts; i++) {
 		fputs("        ethtool [ FLAGS ] ", stdout);
-		fprintf(stdout, "%s %s\t%s\n",
+		fprintf(stdout, "%s%s %s\t%s\n",
+			args[i].targets_phy ? "[ --phy PHY ] " : "",
 			args[i].opts,
 			args[i].no_dev ? "\t" : "DEVNAME",
 			args[i].help);
@@ -6281,7 +6324,7 @@ static int show_usage(struct cmd_context *ctx __maybe_unused)
 	fprintf(stdout, "\n");
 	fprintf(stdout, "FLAGS:\n");
 	fprintf(stdout, "	--debug MASK	turn on debugging messages\n");
-	fprintf(stdout, "	--json		enable JSON output format (not supported by all commands)\n");
+	fprintf(stdout, "	-j|--json	enable JSON output format (not supported by all commands)\n");
 	fprintf(stdout, "	-I|--include-statistics		request device statistics related to the command (not supported by all commands)\n");
 
 	return 0;
@@ -6543,7 +6586,8 @@ int main(int argc, char **argp)
 			argc -= 1;
 			continue;
 		}
-		if (*argp && !strcmp(*argp, "--json")) {
+		if (*argp && (!strcmp(*argp, "--json") ||
+			      !strcmp(*argp, "-j"))) {
 			ctx.json = true;
 			argp += 1;
 			argc -= 1;
@@ -6554,6 +6598,19 @@ int main(int argc, char **argp)
 			ctx.show_stats = true;
 			argp += 1;
 			argc -= 1;
+			continue;
+		}
+		if (*argp && !strcmp(*argp, "--phy")) {
+			char *eptr;
+
+			if (argc < 2)
+				exit_bad_args_info("--phy parameters expects a phy index");
+
+			ctx.phy_index = strtoul(argp[1], &eptr, 0);
+			if (!argp[1][0] || *eptr)
+				exit_bad_args_info("invalid phy index");
+			argp += 2;
+			argc -= 2;
 			continue;
 		}
 		break;
@@ -6591,6 +6648,10 @@ int main(int argc, char **argp)
 	}
 	if (ctx.json && !args[k].json)
 		exit_bad_args_info("JSON output not available for this subcommand");
+
+	if (!args[k].targets_phy && ctx.phy_index)
+		exit_bad_args_info("Unexpected --phy parameter");
+
 	ctx.argc = argc;
 	ctx.argp = argp;
 	netlink_run_handler(&ctx, args[k].nlchk, args[k].nlfunc, !args[k].func);
