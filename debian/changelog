@@ -5,6 +5,7 @@ ethtool (1:6.14-1) UNRELEASED; urgency=medium
       (Closes: #1076629)
   * debian/copyright: Add stanza for netlink/ts.h
   * Update copyright years for debian/* packaging files
+  * Declare compliance with Debian policy 4.7.2
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 08 Apr 2025 05:57:05 +0200
 
