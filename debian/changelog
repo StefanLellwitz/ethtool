@@ -1,3 +1,11 @@
+ethtool (1:6.14-1) UNRELEASED; urgency=medium
+
+  * New upstream release: 6.14
+    - Add AppStream metainfo XML with modalias documented supported hardware
+      (Closes: #1076629)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 08 Apr 2025 05:57:05 +0200
+
 ethtool (1:6.11-1) unstable; urgency=medium
 
   * New upstream release: 6.11
