@@ -1,0 +1,51 @@
+From: Salvatore Bonaccorso <carnil@debian.org>
+Date: Fri, 11 Apr 2025 15:58:55 +0200
+Subject: Set type property to console-application for provided AppStream
+ metainfo XML
+Origin: https://git.kernel.org/cgit/network/ethtool/ethtool.git/commit?id=cf3a1369647e68d919c9a51f0f252c499962d6a0
+Bug-Debian: https://bugs.debian.org/1102647
+
+As pointed out in the Debian downstream report, as ethtool is a
+command-line tool the XML root myst have the type property set to
+console-application.
+
+Additionally with the type propety set to desktop, ethtool is user
+uninstallable via GUI (such as GNOME Software or KDE Discover).
+
+console-application AppStream metainfo XML at least one binary provided
+must be listed in the <binary> tag, thus add the required value along.
+
+Fixes: 02d505bba6fe ("Add AppStream metainfo XML with modalias documented supported hardware.")
+Reported-by: Daniel Rusek <asciiwolf@seznam.cz>
+Co-Developed-by: Daniel Rusek <asciiwolf@seznam.cz>
+Link: https://bugs.debian.org/1102647
+Link: https://bugzilla.redhat.com/show_bug.cgi?id=2359069
+Link: https://freedesktop.org/software/appstream/docs/sect-Metadata-ConsoleApplication.html
+Tested-by: Petter Reinholdtsen <pere@hungry.com>
+Signed-off-by: Salvatore Bonaccorso <carnil@debian.org>
+---
+ org.kernel.software.network.ethtool.metainfo.xml | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/org.kernel.software.network.ethtool.metainfo.xml b/org.kernel.software.network.ethtool.metainfo.xml
+index efe84c17e4cd..7cfacf223af7 100644
+--- a/org.kernel.software.network.ethtool.metainfo.xml
++++ b/org.kernel.software.network.ethtool.metainfo.xml
+@@ -1,5 +1,5 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<component type="desktop">
++<component type="console-application">
+   <id>org.kernel.software.network.ethtool</id>
+   <metadata_license>MIT</metadata_license>
+   <name>ethtool</name>
+@@ -11,6 +11,7 @@
+   </description>
+   <url type="homepage">https://www.kernel.org/pub/software/network/ethtool/</url>
+   <provides>
++    <binary>ethtool</binary>
+     <modalias>pci:v*d*sv*sd*bc02sc80i*</modalias>
+   </provides>
+ </component>
+-- 
+2.49.0
+
