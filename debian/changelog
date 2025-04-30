@@ -1,9 +1,9 @@
-ethtool (1:6.14-2) UNRELEASED; urgency=medium
+ethtool (1:6.14-2) unstable; urgency=medium
 
   * Set type property to console-application for provided AppStream metainfo
     XML (Closes: #1102647)
 
- -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 29 Apr 2025 22:57:39 +0200
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 30 Apr 2025 06:38:17 +0200
 
 ethtool (1:6.14-1) unstable; urgency=medium
 
