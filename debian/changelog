@@ -1,6 +1,7 @@
 ethtool (1:6.15-1) UNRELEASED; urgency=medium
 
   * New upstream release: 6.15
+  * d/copyright: Replace old FSF addresses with current GNU license URL
 
  -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 26 Jun 2025 21:10:18 +0200
 
