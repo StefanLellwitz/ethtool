@@ -1,3 +1,9 @@
+ethtool (1:6.14.1-1) UNRELEASED; urgency=medium
+
+  * New upstream release: 6.14.1
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 26 Jun 2025 11:14:15 +0200
+
 ethtool (1:6.14-2) unstable; urgency=medium
 
   * Set type property to console-application for provided AppStream metainfo
