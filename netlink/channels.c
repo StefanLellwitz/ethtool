@@ -33,21 +33,26 @@ int channels_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	if (!dev_ok(nlctx))
 		return err_ret;
 
+	open_json_object(NULL);
+
 	if (silent)
-		putchar('\n');
-	printf("Channel parameters for %s:\n", nlctx->devname);
-	printf("Pre-set maximums:\n");
+		show_cr();
+	print_string(PRINT_ANY, "ifname", "Channel parameters for %s:\n",
+		     nlctx->devname);
+	print_string(PRINT_FP, NULL, "Pre-set maximums:\n", NULL);
 	show_u32("rx-max", "RX:\t\t", tb[ETHTOOL_A_CHANNELS_RX_MAX]);
 	show_u32("tx-max", "TX:\t\t", tb[ETHTOOL_A_CHANNELS_TX_MAX]);
 	show_u32("other-max", "Other:\t\t", tb[ETHTOOL_A_CHANNELS_OTHER_MAX]);
 	show_u32("combined-max", "Combined:\t",
 		 tb[ETHTOOL_A_CHANNELS_COMBINED_MAX]);
-	printf("Current hardware settings:\n");
+	print_string(PRINT_FP, NULL, "Current hardware settings:\n", NULL);
 	show_u32("rx", "RX:\t\t", tb[ETHTOOL_A_CHANNELS_RX_COUNT]);
 	show_u32("tx", "TX:\t\t", tb[ETHTOOL_A_CHANNELS_TX_COUNT]);
 	show_u32("other", "Other:\t\t", tb[ETHTOOL_A_CHANNELS_OTHER_COUNT]);
 	show_u32("combined", "Combined:\t",
 		 tb[ETHTOOL_A_CHANNELS_COMBINED_COUNT]);
+
+	close_json_object();
 
 	return MNL_CB_OK;
 }
@@ -70,7 +75,10 @@ int nl_gchannels(struct cmd_context *ctx)
 				      ETHTOOL_A_CHANNELS_HEADER, 0);
 	if (ret < 0)
 		return ret;
-	return nlsock_send_get_request(nlsk, channels_reply_cb);
+	new_json_obj(ctx->json);
+	ret = nlsock_send_get_request(nlsk, channels_reply_cb);
+	delete_json_obj();
+	return ret;
 }
 
 /* CHANNELS_SET */

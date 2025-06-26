@@ -51,6 +51,8 @@ int rings_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	show_u32("tx-max", "TX:\t\t\t", tb[ETHTOOL_A_RINGS_TX_MAX]);
 	show_u32("tx-push-buff-max-len", "TX push buff len:\t",
 		 tb[ETHTOOL_A_RINGS_TX_PUSH_BUF_LEN_MAX]);
+	show_u32("hds-thresh-max", "HDS thresh:\t\t",
+		 tb[ETHTOOL_A_RINGS_HDS_THRESH_MAX]);
 	print_string(PRINT_FP, NULL, "Current hardware settings:\n", NULL);
 	show_u32("rx", "RX:\t\t\t", tb[ETHTOOL_A_RINGS_RX]);
 	show_u32("rx-mini", "RX Mini:\t\t", tb[ETHTOOL_A_RINGS_RX_MINI]);
@@ -83,6 +85,8 @@ int rings_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 		print_string(PRINT_ANY, tcp_hds_key, tcp_hds_fmt, tcp_hds_buf);
 		break;
 	}
+	show_u32("hds-thresh", "HDS thresh:\t\t",
+		 tb[ETHTOOL_A_RINGS_HDS_THRESH]);
 
 	close_json_object();
 
@@ -193,6 +197,12 @@ static const struct param_parser sring_params[] = {
 		.type           = ETHTOOL_A_RINGS_RX_PUSH,
 		.handler        = nl_parse_u8bool,
 		.min_argc       = 1,
+	},
+	{
+		.arg		= "hds-thresh",
+		.type		= ETHTOOL_A_RINGS_HDS_THRESH,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 0,
 	},
 	{}
 };

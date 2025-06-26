@@ -28,7 +28,7 @@ ethtool_SOURCES += \
 		  sff-common.c sff-common.h module-common.c module-common.h \
 		  sfpid.c sfpdiag.c ixgbevf.c tse.c vmxnet3.c qsfp.c qsfp.h \
 		  fjes.c lan78xx.c igc.c cmis.c cmis.h bnxt.c cpsw.c lan743x.c \
-		  hns3.c
+		  hns3.c fbnic.c hibmcge.c
 endif
 
 if ENABLE_BASH_COMPLETION

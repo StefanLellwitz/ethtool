@@ -520,6 +520,24 @@ static void init_global_link_mode_masks(void)
 		ETHTOOL_LINK_MODE_10baseT1S_Half_BIT,
 		ETHTOOL_LINK_MODE_10baseT1S_P2MP_Half_BIT,
 		ETHTOOL_LINK_MODE_10baseT1BRR_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseCR_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseKR_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseDR_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseDR_2_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseSR_Full_BIT,
+		ETHTOOL_LINK_MODE_200000baseVR_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseCR2_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseKR2_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseDR2_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseDR2_2_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseSR2_Full_BIT,
+		ETHTOOL_LINK_MODE_400000baseVR2_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseCR4_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseKR4_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseDR4_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseDR4_2_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseSR4_Full_BIT,
+		ETHTOOL_LINK_MODE_800000baseVR4_Full_BIT,
 	};
 	static const enum ethtool_link_mode_bit_indices
 		additional_advertised_flags_bits[] = {
@@ -782,6 +800,42 @@ static void dump_link_caps(const char *prefix, const char *an_prefix,
 		  "10baseT1S/Half" },
 		{ 0, ETHTOOL_LINK_MODE_10baseT1BRR_Full_BIT,
 		  "10baseT1BRR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseCR_Full_BIT,
+		  "200000baseCR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseKR_Full_BIT,
+		  "200000baseKR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseDR_Full_BIT,
+		  "200000baseDR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseDR_2_Full_BIT,
+		  "200000baseDR_2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseSR_Full_BIT,
+		  "200000baseSR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_200000baseVR_Full_BIT,
+		  "200000baseVR/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseCR2_Full_BIT,
+		  "400000baseCR2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseKR2_Full_BIT,
+		  "400000baseKR2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseDR2_Full_BIT,
+		  "400000baseDR2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseDR2_2_Full_BIT,
+		  "400000baseDR2_2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseSR2_Full_BIT,
+		  "400000baseSR2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_400000baseVR2_Full_BIT,
+		  "400000baseVR2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseCR4_Full_BIT,
+		  "800000baseCR4/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseKR4_Full_BIT,
+		  "800000baseKR4/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseDR4_Full_BIT,
+		  "800000baseDR4/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseDR4_2_Full_BIT,
+		  "800000baseDR4_2/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseSR4_Full_BIT,
+		  "800000baseSR4/Full" },
+		{ 0, ETHTOOL_LINK_MODE_800000baseVR4_Full_BIT,
+		  "800000baseVR4/Full" },
 	};
 	int indent;
 	int did1, new_line_pend;
@@ -1206,6 +1260,8 @@ static const struct {
 	{ "fsl_enetc", fsl_enetc_dump_regs },
 	{ "fsl_enetc_vf", fsl_enetc_dump_regs },
 	{ "hns3", hns3_dump_regs },
+	{ "fbnic", fbnic_dump_regs },
+	{ "hibmcge", hibmcge_dump_regs },
 };
 #endif
 
@@ -4119,6 +4175,9 @@ static int do_grxfh(struct cmd_context *ctx)
 	printf("    symmetric-xor: %s\n",
 	       (rss->input_xfrm & RXH_XFRM_SYM_XOR) ? "on" : "off");
 	rss->input_xfrm &= ~RXH_XFRM_SYM_XOR;
+	printf("    symmetric-or-xor: %s\n",
+	       (rss->input_xfrm & RXH_XFRM_SYM_OR_XOR) ? "on" : "off");
+	rss->input_xfrm &= ~RXH_XFRM_SYM_OR_XOR;
 
 	if (rss->input_xfrm)
 		printf("    Unknown bits in RSS input transformation: 0x%x\n",
@@ -4291,6 +4350,8 @@ static int do_srxfh(struct cmd_context *ctx)
 				exit_bad_args();
 			if (!strcmp(ctx->argp[arg_num], "symmetric-xor"))
 				req_input_xfrm = RXH_XFRM_SYM_XOR;
+			else if (!strcmp(ctx->argp[arg_num], "symmetric-or-xor"))
+				req_input_xfrm = RXH_XFRM_SYM_OR_XOR;
 			else if (!strcmp(ctx->argp[arg_num], "none"))
 				req_input_xfrm = 0;
 			else
@@ -5869,6 +5930,7 @@ static const struct option args[] = {
 			  "		[ tx-push on|off ]\n"
 			  "		[ rx-push on|off ]\n"
 			  "		[ tx-push-buf-len N]\n"
+			  "		[ hds-thresh N ]\n"
 	},
 	{
 		.opts	= "-k|--show-features|--show-offload",
@@ -6017,7 +6079,7 @@ static const struct option args[] = {
 			  "		[ equal N | weight W0 W1 ... | default ]\n"
 			  "		[ hkey %x:%x:%x:%x:%x:.... ]\n"
 			  "		[ hfunc FUNC ]\n"
-			  "		[ xfrm symmetric-xor|none ]\n"
+			  "		[ xfrm symmetric-xor | symmetric-or-xor | none ]\n"
 			  "		[ delete ]\n"
 	},
 	{
@@ -6046,6 +6108,7 @@ static const struct option args[] = {
 	},
 	{
 		.opts	= "-l|--show-channels",
+		.json	= true,
 		.func	= do_gchannels,
 		.nlfunc	= nl_gchannels,
 		.help	= "Query Channels"

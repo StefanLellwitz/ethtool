@@ -210,6 +210,7 @@ ethtool \- query or control network driver and hardware settings
 .BN tx
 .BN rx\-buf\-len
 .B3 tcp\-data\-split auto on off
+.BN hds\-thresh
 .BN cqe\-size
 .BN tx\-push
 .BN rx\-push
@@ -372,7 +373,7 @@ ethtool \- query or control network driver and hardware settings
 .RB ...\ | \ default \ ]
 .RB [ hfunc
 .IR FUNC ]
-.B2 xfrm symmetric-xor none
+.B3 xfrm symmetric-xor symmetric-or-xor none
 .RB [ context
 .I CTX
 .RB |\  new ]
@@ -692,6 +693,9 @@ Changes the size of a buffer in the Rx ring.
 .BI tcp\-data\-split \ auto|on|off
 Specifies the state of TCP data split.
 .TP
+.BI hds\-thresh \ N
+Specifies the threshold value of tcp data split
+.TP
 .BI cqe\-size \ N
 Changes the size of completion queue event.
 .TP
@@ -974,6 +978,12 @@ lB	l	lB.
 0x400000000000000000000	200000baseLR2_ER2_FR2 Full
 0x800000000000000000000	200000baseDR2 Full
 0x1000000000000000000000	200000baseCR2 Full
+0x80000000000000000000000000	200000baseCR Full
+0x100000000000000000000000000	200000baseKR Full
+0x200000000000000000000000000	200000baseDR Full
+0x400000000000000000000000000	200000baseDR_2 Full
+0x800000000000000000000000000	200000baseSR Full
+0x1000000000000000000000000000	200000baseVR Full
 0x200000000000000000	400000baseKR8 Full
 0x400000000000000000	400000baseSR8 Full
 0x800000000000000000	400000baseLR8_ER8_FR8 Full
@@ -984,12 +994,24 @@ lB	l	lB.
 0x8000000000000000000000	400000baseLR4_ER4_FR4 Full
 0x10000000000000000000000	400000baseDR4 Full
 0x20000000000000000000000	400000baseCR4 Full
+0x2000000000000000000000000000	400000baseCR2 Full
+0x4000000000000000000000000000	400000baseKR2 Full
+0x8000000000000000000000000000	400000baseDR2 Full
+0x10000000000000000000000000000	400000baseDR2_2 Full
+0x20000000000000000000000000000	400000baseSR2 Full
+0x40000000000000000000000000000	400000baseVR2 Full
 0x200000000000000000000000	800000baseCR8 Full
 0x400000000000000000000000	800000baseKR8 Full
 0x800000000000000000000000	800000baseDR8 Full
 0x1000000000000000000000000	800000baseDR8_2 Full
 0x2000000000000000000000000	800000baseSR8 Full
 0x4000000000000000000000000	800000baseVR8 Full
+0x80000000000000000000000000000	800000baseCR4 Full
+0x100000000000000000000000000000	800000baseKR4 Full
+0x200000000000000000000000000000	800000baseDR4 Full
+0x400000000000000000000000000000	800000baseDR4_2 Full
+0x800000000000000000000000000000	800000baseSR4 Full
+0x1000000000000000000000000000000	800000baseVR4 Full
 .TE
 .TP
 .BI phyad \ N
@@ -1292,15 +1314,15 @@ List of RSS hash functions which kernel supports is shown as a part of the --sho
 .TP
 .BI xfrm
 Sets the RSS input transformation. Currently, only the
-.B symmetric-xor
-transformation is supported where the NIC XORs the L3 and/or L4 source and
-destination fields (as selected by
+.B symmetric-xor and symmetric-or-xor
+transformations are supported where the NIC XORs/ORs the L3 and/or L4 source
+and destination fields (as selected by
 .B --config-nfc rx-flow-hash
 ) before passing them to the hash algorithm. The RSS hash function will
 then yield the same hash for the other flow direction where the source and
-destination fields are swapped (i.e. Symmetric RSS). Note that XORing the
-input parameters reduces the entropy of the input set and the hash algorithm
-could potentially be exploited. Switch off (default) by
+destination fields are swapped (i.e. Symmetric RSS). Note that this operation
+reduces the entropy of the input set and the hash algorithm could potentially
+be exploited. Switch off (default) by
 .B xfrm none.
 .TP
 .BI start\  N

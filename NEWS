@@ -1,4 +1,9 @@
-Version 6.14.1 - June 23, 2025
+Version 6.15 - June 23, 2025
+	* Feature: support OR-XOR symmetric RSS hash type (-x/-X)
+	* Feature: dump registers for hibmcge driver (-d)
+	* Feature: configure header-data split threshold (-g/-G)
+	* Feature: dump registers for fbnic driver (-d)
+	* Feature: JSON output for channels info (-l)
 	* Fix: incorrect data in appstream metainfo XML
 	* Fix: prevent potential null pointer dereferences
 	* Fix: more consistent and better parseable per lane signal info (-d)

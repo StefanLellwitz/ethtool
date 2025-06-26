@@ -366,6 +366,9 @@ int vmxnet3_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 /* hns3 ethernet controller */
 int hns3_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 
+/* hibmcge ethernet controller */
+int hibmcge_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
+
 /* Rx flow classification */
 int rxclass_parse_ruleopts(struct cmd_context *ctx,
 			   struct ethtool_rx_flow_spec *fsp, __u32 *rss_context);
@@ -413,4 +416,6 @@ int cpsw_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 /* Microchip Ethernet Controller */
 int lan743x_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 
+/* Meta Ethernet Controller */
+int fbnic_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 #endif /* ETHTOOL_INTERNAL_H__ */
