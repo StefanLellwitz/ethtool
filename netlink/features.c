@@ -275,9 +275,11 @@ static int find_feature(const char *name,
 	const unsigned int count = get_count(feature_names);
 	unsigned int i;
 
-	for (i = 0; i < count; i++)
-		if (!strcmp(name, get_string(feature_names, i)))
+	for (i = 0; i < count; i++) {
+		const char *str = get_string(feature_names, i);
+		if (str && !strcmp(name, str))
 			return i;
+	}
 
 	return -1;
 }
