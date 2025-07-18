@@ -1,3 +1,9 @@
+ethtool (1:6.15-2) UNRELEASED; urgency=medium
+
+  * d/salsa-ci.yml: Remove obsolete lintian error suppressions
+
+ -- Ben Hutchings <benh@debian.org>  Fri, 18 Jul 2025 14:13:18 +0200
+
 ethtool (1:6.15-1) experimental; urgency=medium
 
   * New upstream release: 6.15
