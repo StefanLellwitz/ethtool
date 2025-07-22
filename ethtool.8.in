@@ -1707,6 +1707,15 @@ administratively down. The power mode policy can be set before a module is
 plugged-in.
 .RE
 .TP
+.B --set-module-eeprom
+Write data to the module EEPROM. This requires kernel and driver
+support for the ETHTOOL_SMODULEEEPROM ioctl.  The data to be written
+is read from standard input unless a single-byte \fBvalue\fR argument is
+supplied.  The parameters \fBoffset\fR and \fBlength\fR specify the region
+to modify, similar to \fB--set-eeprom\fR.
+.RE
+
+.TP
 .B \-\-get\-plca\-cfg
 Show the current PLCA parameters for the given interface.
 .RE
