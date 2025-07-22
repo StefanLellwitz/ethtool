@@ -63,7 +63,8 @@ int nl_get_phy(struct cmd_context *ctx);
 void nl_monitor_usage(void);
 
 int nl_get_eeprom_page(struct cmd_context *ctx,
-		       struct ethtool_module_eeprom *request);
+                       struct ethtool_module_eeprom *request);
+int nl_set_module_eeprom(struct cmd_context *ctx);
 
 #else /* ETHTOOL_ENABLE_NETLINK */
 
@@ -92,10 +93,16 @@ static inline void nl_monitor_usage(void)
 
 static inline int
 nl_get_eeprom_page(struct cmd_context *ctx __maybe_unused,
-		   struct ethtool_module_eeprom *request __maybe_unused)
+                   struct ethtool_module_eeprom *request __maybe_unused)
 {
-	fprintf(stderr, "Netlink not supported by ethtool.\n");
-	return -EOPNOTSUPP;
+        fprintf(stderr, "Netlink not supported by ethtool.\n");
+        return -EOPNOTSUPP;
+}
+
+static inline int nl_set_module_eeprom(struct cmd_context *ctx __maybe_unused)
+{
+        fprintf(stderr, "Netlink not supported by ethtool.\n");
+        return -EOPNOTSUPP;
 }
 
 #define nl_gset			NULL
@@ -128,6 +135,7 @@ nl_get_eeprom_page(struct cmd_context *ctx __maybe_unused,
 #define nl_getmodule		NULL
 #define nl_gmodule		NULL
 #define nl_smodule		NULL
+#define nl_set_module_eeprom      NULL
 #define nl_grss			NULL
 #define nl_plca_get_cfg		NULL
 #define nl_plca_set_cfg		NULL

@@ -6150,6 +6150,17 @@ static const struct option args[] = {
 			  "		[ bank N ]\n"
 			  "		[ i2c N ]\n"
 	},
+        {
+                .opts   = "--set-module-eeprom",
+                .nlfunc = nl_set_module_eeprom,
+                .help   = "Write transceiver module EEPROM",
+                .xhelp  = "             [ offset N ]\n"
+                          "             [ length N ]\n"
+                          "             [ value N ]\n"
+                          "             [ page N ]\n"
+                          "             [ bank N ]\n"
+                          "             [ i2c N ]\n"
+        },
 	{
 		.opts	= "--show-eee",
 		.json	= true,

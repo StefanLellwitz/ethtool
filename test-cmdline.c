@@ -264,6 +264,8 @@ static struct test_case {
 	{ 0, "--module-info devname" },
 	{ 0, "-m devname raw on" },
 	{ 0, "-m devname raw off" },
+        { 1, "--set-module-eeprom" },
+        { 0, "--set-module-eeprom devname offset 0 length 1 value 1" },
 	{ 0, "-m devname hex on" },
 	{ 0, "-m devname hex off" },
 	{ 1, "-m devname hex on raw on" },
