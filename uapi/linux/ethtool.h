@@ -1922,6 +1922,7 @@ enum ethtool_fec_config_bits {
 #define ETHTOOL_GET_TS_INFO	0x00000041 /* Get time stamping and PHC info */
 #define ETHTOOL_GMODULEINFO	0x00000042 /* Get plug-in module information */
 #define ETHTOOL_GMODULEEEPROM	0x00000043 /* Get plug-in module eeprom */
+#define ETHTOOL_SMODULEEEPROM   0x00000052 /* Set plug-in module eeprom */
 #define ETHTOOL_GEEE		0x00000044 /* Get EEE settings */
 #define ETHTOOL_SEEE		0x00000045 /* Set EEE settings */
 

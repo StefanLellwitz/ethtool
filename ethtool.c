@@ -3742,9 +3742,101 @@ static int do_seeprom(struct cmd_context *ctx)
 		perror("Cannot set EEPROM data");
 		err = 87;
 	}
-	free(eeprom);
+        free(eeprom);
 
-	return err;
+        return err;
+}
+
+static int do_semodule_eeprom(struct cmd_context *ctx)
+{
+        int semod_changed = 0;
+        u32 semod_length = 0;
+        u32 semod_offset = 0;
+        u8 semod_value = 0;
+        int semod_length_seen = 0;
+        int semod_value_seen = 0;
+        struct cmdline_info cmdline_semodule[] = {
+                {
+                        .name           = "offset",
+                        .type           = CMDL_U32,
+                        .wanted_val     = &semod_offset,
+                },
+                {
+                        .name           = "length",
+                        .type           = CMDL_U32,
+                        .wanted_val     = &semod_length,
+                        .seen_val       = &semod_length_seen,
+                },
+                {
+                        .name           = "value",
+                        .type           = CMDL_U8,
+                        .wanted_val     = &semod_value,
+                        .seen_val       = &semod_value_seen,
+                },
+        };
+        struct ethtool_modinfo modinfo;
+        struct ethtool_eeprom *eeprom;
+        int err;
+
+        parse_generic_cmdline(ctx, &semod_changed,
+                              cmdline_semodule,
+                              ARRAY_SIZE(cmdline_semodule));
+
+        modinfo.cmd = ETHTOOL_GMODULEINFO;
+        err = send_ioctl(ctx, &modinfo);
+        if (err < 0) {
+                perror("Cannot get module EEPROM information");
+                return 95;
+        }
+
+        if (semod_value_seen && !semod_length_seen)
+                semod_length = 1;
+        else if (!semod_length_seen)
+                semod_length = modinfo.eeprom_len;
+
+        if (semod_value_seen && semod_length != 1) {
+                fprintf(stderr, "value requires length 1\n");
+                return 1;
+        }
+
+        if (modinfo.eeprom_len < semod_offset + semod_length) {
+                fprintf(stderr, "offset & length out of bounds\n");
+                return 1;
+        }
+
+        eeprom = calloc(1, sizeof(*eeprom) + semod_length);
+        if (!eeprom) {
+                perror("Cannot allocate memory for Module EEPROM data");
+                return 95;
+        }
+
+        eeprom->cmd = ETHTOOL_SMODULEEEPROM;
+        eeprom->len = semod_length;
+        eeprom->offset = semod_offset;
+
+        if (semod_value_seen) {
+                eeprom->data[0] = semod_value;
+        } else {
+                if (fread(eeprom->data, eeprom->len, 1, stdin) != 1) {
+                        fprintf(stderr, "not enough data from stdin\n");
+                        free(eeprom);
+                        return 95;
+                }
+                if ((fgetc(stdin) != EOF) || !feof(stdin)) {
+                        fprintf(stderr, "too much data from stdin\n");
+                        free(eeprom);
+                        return 95;
+                }
+        }
+
+        err = send_ioctl(ctx, eeprom);
+        if (err < 0) {
+                perror("Cannot set module EEPROM data");
+                err = 95;
+        }
+
+        free(eeprom);
+        return err;
 }
 
 static int do_test(struct cmd_context *ctx)
@@ -6283,6 +6375,11 @@ static const struct option args[] = {
 		.help	= "Set transceiver module settings",
 		.xhelp	= "		[ power-mode-policy high|auto ]\n"
 	},
+       {
+               .opts   = "--set-module-eeprom",
+               .func   = do_semodule_eeprom,
+               .help   = "Set plug-in module EEPROM"
+       },
 	{
 		.opts	= "--get-plca-cfg",
 		.targets_phy	= true,
