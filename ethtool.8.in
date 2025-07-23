@@ -403,6 +403,15 @@ ethtool \- query or control network driver and hardware settings
 .BN bank
 .BN i2c
 .HP
+.B ethtool \-\-set-module-eeprom
+.I devname
+.BN offset
+.BN length
+.BN value
+.BN page
+.BN bank
+.BN i2c
+.HP
 .B ethtool \-\-show\-priv\-flags
 .I devname
 .HP
@@ -1706,6 +1715,14 @@ administratively up and to low power mode when the last port using it is put
 administratively down. The power mode policy can be set before a module is
 plugged-in.
 .RE
+.TP
+.B \-\-set-module-eeprom
+Write data to the transceiver module's EEPROM. The offset and
+length parameters select the portion of EEPROM to update. When
+the \fBvalue\fR parameter is provided, a single byte is written;
+otherwise \fBlength\fR bytes are read from standard input. Optional
+\fBpage\fR, \fBbank\fR and \fBi2c\fR parameters specify the EEPROM
+page, bank and I2C address to use.
 .TP
 .B \-\-get\-plca\-cfg
 Show the current PLCA parameters for the given interface.

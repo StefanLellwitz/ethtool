@@ -1939,6 +1939,7 @@ enum ethtool_fec_config_bits {
 #define ETHTOOL_PHY_STUNABLE	0x0000004f /* Set PHY tunable configuration */
 #define ETHTOOL_GFECPARAM	0x00000050 /* Get FEC settings */
 #define ETHTOOL_SFECPARAM	0x00000051 /* Set FEC settings */
+#define ETHTOOL_SMODULEEEPROM   0x00000052 /* Set plug-in module eeprom */
 
 /* compatibility with older code */
 #define SPARC_ETH_GSET		ETHTOOL_GSET
