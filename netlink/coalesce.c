@@ -33,43 +33,71 @@ int coalesce_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	if (!dev_ok(nlctx))
 		return err_ret;
 
+	open_json_object(NULL);
+
 	if (silent)
-		putchar('\n');
-	printf("Coalesce parameters for %s:\n", nlctx->devname);
-	show_bool("rx", "Adaptive RX: %s  ",
+		show_cr();
+	print_string(PRINT_ANY, "ifname", "Coalesce parameters for %s:\n",
+		     nlctx->devname);
+	show_bool("adaptive-rx", "Adaptive RX: %s  ",
 		  tb[ETHTOOL_A_COALESCE_USE_ADAPTIVE_RX]);
-	show_bool("tx", "TX: %s\n", tb[ETHTOOL_A_COALESCE_USE_ADAPTIVE_TX]);
-	show_u32(tb[ETHTOOL_A_COALESCE_STATS_BLOCK_USECS],
-		 "stats-block-usecs: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RATE_SAMPLE_INTERVAL],
-		 "sample-interval: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_PKT_RATE_LOW], "pkt-rate-low: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_PKT_RATE_HIGH], "pkt-rate-high: ");
-	putchar('\n');
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_USECS], "rx-usecs: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES], "rx-frames: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_USECS_IRQ], "rx-usecs-irq: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_IRQ], "rx-frames-irq: ");
-	putchar('\n');
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_USECS], "tx-usecs: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES], "tx-frames: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_USECS_IRQ], "tx-usecs-irq: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_IRQ], "tx-frames-irq: ");
-	putchar('\n');
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_USECS_LOW], "rx-usecs-low: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_LOW], "rx-frame-low: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_USECS_LOW], "tx-usecs-low: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_LOW], "tx-frame-low: ");
-	putchar('\n');
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_USECS_HIGH], "rx-usecs-high: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_HIGH], "rx-frame-high: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_USECS_HIGH], "tx-usecs-high: ");
-	show_u32(tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_HIGH], "tx-frame-high: ");
-	putchar('\n');
-	show_bool("rx", "CQE mode RX: %s  ",
+	show_bool("adaptive-tx", "TX: %s\n", tb[ETHTOOL_A_COALESCE_USE_ADAPTIVE_TX]);
+	show_u32("stats-block-usecs", "stats-block-usecs:\t",
+		 tb[ETHTOOL_A_COALESCE_STATS_BLOCK_USECS]);
+	show_u32("sample-interval", "sample-interval:\t",
+		 tb[ETHTOOL_A_COALESCE_RATE_SAMPLE_INTERVAL]);
+	show_u32("pkt-rate-low", "pkt-rate-low:\t\t",
+		 tb[ETHTOOL_A_COALESCE_PKT_RATE_LOW]);
+	show_u32("pkt-rate-high", "pkt-rate-high:\t\t",
+		 tb[ETHTOOL_A_COALESCE_PKT_RATE_HIGH]);
+	show_cr();
+	show_u32("rx-usecs", "rx-usecs:\t", tb[ETHTOOL_A_COALESCE_RX_USECS]);
+	show_u32("rx-frames", "rx-frames:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES]);
+	show_u32("rx-usecs-irq", "rx-usecs-irq:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_USECS_IRQ]);
+	show_u32("rx-frames-irq", "rx-frames-irq:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_IRQ]);
+	show_cr();
+	show_u32("tx-usecs", "tx-usecs:\t", tb[ETHTOOL_A_COALESCE_TX_USECS]);
+	show_u32("tx-frames", "tx-frames:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES]);
+	show_u32("tx-usecs-irq", "tx-usecs-irq:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_USECS_IRQ]);
+	show_u32("tx-frames-irq", "tx-frames-irq:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_IRQ]);
+	show_cr();
+	show_u32("rx-usecs-low", "rx-usecs-low:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_USECS_LOW]);
+	show_u32("rx-frame-low", "rx-frame-low:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_LOW]);
+	show_u32("tx-usecs-low", "tx-usecs-low:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_USECS_LOW]);
+	show_u32("tx-frame-low", "tx-frame-low:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_LOW]);
+	show_cr();
+	show_u32("rx-usecs-high", "rx-usecs-high:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_USECS_HIGH]);
+	show_u32("rx-frame-high", "rx-frame-high:\t",
+		 tb[ETHTOOL_A_COALESCE_RX_MAX_FRAMES_HIGH]);
+	show_u32("tx-usecs-high", "tx-usecs-high:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_USECS_HIGH]);
+	show_u32("tx-frame-high", "tx-frame-high:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_MAX_FRAMES_HIGH]);
+	show_cr();
+	show_bool("cqe-mode-rx", "CQE mode RX: %s  ",
 		  tb[ETHTOOL_A_COALESCE_USE_CQE_MODE_RX]);
-	show_bool("tx", "TX: %s\n", tb[ETHTOOL_A_COALESCE_USE_CQE_MODE_TX]);
-	putchar('\n');
+	show_bool("cqe-mode-tx", "TX: %s\n", tb[ETHTOOL_A_COALESCE_USE_CQE_MODE_TX]);
+	show_cr();
+	show_u32("tx-aggr-max-bytes", "tx-aggr-max-bytes:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_MAX_BYTES]);
+	show_u32("tx-aggr-max-frames", "tx-aggr-max-frames:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_MAX_FRAMES]);
+	show_u32("tx-aggr-time-usecs", "tx-aggr-time-usecs:\t",
+		 tb[ETHTOOL_A_COALESCE_TX_AGGR_TIME_USECS]);
+	show_cr();
+
+	close_json_object();
 
 	return MNL_CB_OK;
 }
@@ -92,7 +120,11 @@ int nl_gcoalesce(struct cmd_context *ctx)
 				      ETHTOOL_A_COALESCE_HEADER, 0);
 	if (ret < 0)
 		return ret;
-	return nlsock_send_get_request(nlsk, coalesce_reply_cb);
+
+	new_json_obj(ctx->json);
+	ret = nlsock_send_get_request(nlsk, coalesce_reply_cb);
+	delete_json_obj();
+	return ret;
 }
 
 /* COALESCE_SET */
@@ -240,6 +272,24 @@ static const struct param_parser scoalesce_params[] = {
 		.arg		= "cqe-mode-tx",
 		.type		= ETHTOOL_A_COALESCE_USE_CQE_MODE_TX,
 		.handler	= nl_parse_u8bool,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-max-bytes",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_MAX_BYTES,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-max-frames",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_MAX_FRAMES,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 1,
+	},
+	{
+		.arg		= "tx-aggr-time-usecs",
+		.type		= ETHTOOL_A_COALESCE_TX_AGGR_TIME_USECS,
+		.handler	= nl_parse_direct_u32,
 		.min_argc	= 1,
 	},
 	{}

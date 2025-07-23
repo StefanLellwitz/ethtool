@@ -117,7 +117,7 @@
 .  hy \\n(HY
 ..
 .
-.TH ETHTOOL 8 "December 2022" "Ethtool version @VERSION@"
+.TH ETHTOOL 8 "June 2025" "Ethtool version @VERSION@"
 .SH NAME
 ethtool \- query or control network driver and hardware settings
 .
@@ -137,10 +137,17 @@ ethtool \- query or control network driver and hardware settings
 .BN --debug
 .I args
 .HP
+.B ethtool [--disable-netlink]
+.I args
+.HP
 .B ethtool [--json]
 .I args
 .HP
 .B ethtool [-I | --include-statistics]
+.I args
+.HP
+.B ethtool
+.BN --phy
 .I args
 .HP
 .B ethtool \-\-monitor
@@ -188,6 +195,9 @@ ethtool \- query or control network driver and hardware settings
 .BN sample\-interval
 .B2 cqe\-mode\-rx on off
 .B2 cqe\-mode\-tx on off
+.BN tx\-aggr\-max\-bytes
+.BN tx\-aggr\-max\-frames
+.BN tx\-aggr\-time\-usecs
 .HP
 .B ethtool \-g|\-\-show\-ring
 .I devname
@@ -199,8 +209,12 @@ ethtool \- query or control network driver and hardware settings
 .BN rx\-jumbo
 .BN tx
 .BN rx\-buf\-len
+.B3 tcp\-data\-split auto on off
+.BN hds\-thresh
 .BN cqe\-size
 .BN tx\-push
+.BN rx\-push
+.BN tx\-push\-buf\-len
 .HP
 .B ethtool \-i|\-\-driver
 .I devname
@@ -329,6 +343,20 @@ ethtool \- query or control network driver and hardware settings
 .HP
 .B ethtool \-T|\-\-show\-time\-stamping
 .I devname
+.RB [ index
+.IR N
+.BI qualifier
+.IR precise|approx ]
+.HP
+.B ethtool \-\-get\-hwtimestamp\-cfg
+.I devname
+.HP
+.B ethtool \-\-set\-hwtimestamp\-cfg
+.I devname
+.RB [ index
+.IR N
+.BI qualifier
+.IR precise|approx ]
 .HP
 .B ethtool \-x|\-\-show\-rxfh\-indir|\-\-show\-rxfh
 .I devname
@@ -345,6 +373,7 @@ ethtool \- query or control network driver and hardware settings
 .RB ...\ | \ default \ ]
 .RB [ hfunc
 .IR FUNC ]
+.B3 xfrm symmetric-xor symmetric-or-xor none
 .RB [ context
 .I CTX
 .RB |\  new ]
@@ -370,6 +399,15 @@ ethtool \- query or control network driver and hardware settings
 .B2 hex on off
 .BN offset
 .BN length
+.BN page
+.BN bank
+.BN i2c
+.HP
+.B ethtool \-\-set-module-eeprom
+.I devname
+.BN offset
+.BN length
+.BN value
 .BN page
 .BN bank
 .BN i2c
@@ -468,7 +506,6 @@ ethtool \- query or control network driver and hardware settings
 .IR %x ]
 .I sub_command
 .RB ...
- .
 .HP
 .B ethtool \-\-cable\-test
 .I devname
@@ -490,6 +527,59 @@ ethtool \- query or control network driver and hardware settings
 .I devname
 .RB [ power\-mode\-policy
 .BR high | auto ]
+.HP
+.B ethtool \-\-get\-plca\-cfg
+.I devname
+.HP
+.B ethtool \-\-set\-plca\-cfg
+.I devname
+.RB [ enable
+.BR on | off ]
+.BN node\-id N
+.BN node\-cnt N
+.BN to\-tmr N
+.BN burst\-cnt N
+.BN burst\-tmr N
+.HP
+.B ethtool \-\-get\-plca\-status
+.I devname
+.HP
+.B ethtool \-\-show\-mm
+.I devname
+.HP
+.B ethtool \-\-set\-mm
+.I devname
+.RB [ verify\-enabled
+.BR on | off ]
+.RB [ verify\-time
+.BR N ]
+.RB [ tx\-enabled
+.BR on | off ]
+.RB [ pmac\-enabled
+.BR on | off ]
+.RB [ tx\-min\-frag\-size
+.BR N ]
+.HP
+.B ethtool \-\-show\-pse
+.I devname
+.HP
+.B ethtool \-\-set\-pse
+.I devname
+.RB [ podl\-pse\-admin\-control
+.BR enable | disable ]
+.RB [ c33\-pse\-admin\-control
+.BR enable | disable ]
+.BN c33\-pse\-avail\-pw\-limit N
+.HP
+.B ethtool \-\-flash\-module\-firmware
+.I devname
+.BI file
+.IR FILE
+.RB [ pass
+.IR PASS ]
+.HP
+.B ethtool \-\-show\-phys
+.I devname
 .
 .\" Adjust lines (i.e. full justification) and hyphenate.
 .ad
@@ -520,7 +610,14 @@ Turns on debugging messages. Argument is interpreted as a mask:
 nokeep;
 lB	l.
 0x01  Parser information
+0x02  Summary of netlink messages
+0x04  Hex dump of sent netlink messages
+0x08  Hex dump of received netlink messages
+0x10  Structure of netlink messages
 .TE
+.TP
+.BI \-\-disable-netlink
+Do not use netlink and fall back to the ioctl interface if possible.
 .TP
 .BI \-\-json
 Output results in JavaScript Object Notation (JSON). Only a subset of
@@ -531,8 +628,34 @@ plain text in the presence of this option.
 Include command-related statistics in the output. This option allows
 displaying relevant device statistics for selected get commands.
 .TP
+.BI \-\-phy \ N
+Target a PHY within the interface. The PHY index can be retrieved with
+.B \-\-show\-phys. PHY index 0 targets the phy device directly attached to
+the ethernet MAC, if any.
+The following commands can accept a PHY index:
+.TS
+nokeep;
+lB	l.
+\-\-cable\-test
+\-\-cable\-test\-tdr
+\-\-get\-plca\-cfg
+\-\-set\-plca\-cfg
+\-\-get\-plca\-status
+\-\-show-pse
+\-\-set-pse
+.TE
+.TP
 .B \-a \-\-show\-pause
 Queries the specified Ethernet device for pause parameter information.
+.RS 4
+.TP
+.A3 \fB\-\-src \fBaggregate\fP \fBemac\fP \fBpmac\fP
+If the MAC Merge layer is supported, request a particular source of device
+statistics (eMAC or pMAC, or their aggregate). Only valid if ethtool was
+invoked with the
+.B \-I \-\-include\-statistics
+argument.
+.RE
 .TP
 .B \-A \-\-pause
 Changes the pause parameters of the specified Ethernet device.
@@ -576,11 +699,24 @@ Changes the number of ring entries for the Tx ring.
 .BI rx\-buf\-len \ N
 Changes the size of a buffer in the Rx ring.
 .TP
+.BI tcp\-data\-split \ auto|on|off
+Specifies the state of TCP data split.
+.TP
+.BI hds\-thresh \ N
+Specifies the threshold value of tcp data split
+.TP
 .BI cqe\-size \ N
 Changes the size of completion queue event.
 .TP
 .BI tx\-push \ on|off
 Specifies whether TX push should be enabled.
+.TP
+.BI rx\-push \ on|off
+Specifies whether RX push should be enabled.
+.TP
+.BI tx\-push\-buf\-len \ N
+Specifies the maximum number of bytes of a transmitted packet a driver can push
+directly to the underlying device
 .RE
 .TP
 .B \-i \-\-driver
@@ -698,6 +834,10 @@ naming of NIC- and driver-specific statistics across vendors.
 .TP
 .B \fB\-\-groups [\fBeth\-phy\fP] [\fBeth\-mac\fP] [\fBeth\-ctrl\fP] [\fBrmon\fP]
 Request groups of standard device statistics.
+.TP
+.A3 \fB\-\-src \fBaggregate\fP \fBemac\fP \fBpmac\fP
+If the MAC Merge layer is supported, request a particular source of device
+statistics (eMAC or pMAC, or their aggregate).
 .RE
 .TP
 .B \-\-phy\-statistics
@@ -776,6 +916,10 @@ lB	l	lB.
 0x001	10baseT Half
 0x002	10baseT Full
 0x100000000000000000000000	10baseT1L Full
+0x8000000000000000000000000	10baseT1S Full
+0x10000000000000000000000000	10baseT1S Half
+0x20000000000000000000000000	10baseT1S_P2MP Half
+0x40000000000000000000000000	10baseT1BRR Full
 0x004	100baseT Half
 0x008	100baseT Full
 0x80000000000000000	100baseT1 Full
@@ -843,6 +987,12 @@ lB	l	lB.
 0x400000000000000000000	200000baseLR2_ER2_FR2 Full
 0x800000000000000000000	200000baseDR2 Full
 0x1000000000000000000000	200000baseCR2 Full
+0x80000000000000000000000000	200000baseCR Full
+0x100000000000000000000000000	200000baseKR Full
+0x200000000000000000000000000	200000baseDR Full
+0x400000000000000000000000000	200000baseDR_2 Full
+0x800000000000000000000000000	200000baseSR Full
+0x1000000000000000000000000000	200000baseVR Full
 0x200000000000000000	400000baseKR8 Full
 0x400000000000000000	400000baseSR8 Full
 0x800000000000000000	400000baseLR8_ER8_FR8 Full
@@ -853,6 +1003,24 @@ lB	l	lB.
 0x8000000000000000000000	400000baseLR4_ER4_FR4 Full
 0x10000000000000000000000	400000baseDR4 Full
 0x20000000000000000000000	400000baseCR4 Full
+0x2000000000000000000000000000	400000baseCR2 Full
+0x4000000000000000000000000000	400000baseKR2 Full
+0x8000000000000000000000000000	400000baseDR2 Full
+0x10000000000000000000000000000	400000baseDR2_2 Full
+0x20000000000000000000000000000	400000baseSR2 Full
+0x40000000000000000000000000000	400000baseVR2 Full
+0x200000000000000000000000	800000baseCR8 Full
+0x400000000000000000000000	800000baseKR8 Full
+0x800000000000000000000000	800000baseDR8 Full
+0x1000000000000000000000000	800000baseDR8_2 Full
+0x2000000000000000000000000	800000baseSR8 Full
+0x4000000000000000000000000	800000baseVR8 Full
+0x80000000000000000000000000000	800000baseCR4 Full
+0x100000000000000000000000000000	800000baseKR4 Full
+0x200000000000000000000000000000	800000baseDR4 Full
+0x400000000000000000000000000000	800000baseDR4_2 Full
+0x800000000000000000000000000000	800000baseSR4 Full
+0x1000000000000000000000000000000	800000baseVR4 Full
 .TE
 .TP
 .BI phyad \ N
@@ -1077,6 +1245,10 @@ Specifies the RSS context to spread packets over multiple queues; either
 for the default RSS context, or a value returned by
 .BI ethtool\ -X\  ... \ context
 .BR new .
+If combined with
+.BR action \ or\  queue ,
+the Rx queue specified will be added to the value read from the RSS indirection
+table to produce the actual Rx queue to deliver to.
 .TP
 .BI vf \ N
 Specifies the Virtual Function the filter applies to. Not compatible with action.
@@ -1106,7 +1278,32 @@ Sets the dump flag for the device.
 .TP
 .B \-T \-\-show\-time\-stamping
 Show the device's time stamping capabilities and associated PTP
-hardware clock.
+hardware clock. Show the capabilities of the currently selected time
+stamping if no \fBindex\fR and \fBqualifier\fR is provided.
+.RS 4
+.TP
+.BI index \ N
+Index of the ptp hardware clock
+.TP
+.BI qualifier \ precise | approx
+Qualifier of the ptp hardware clock. Mainly "precise" the default one is
+for IEEE 1588 quality and "approx" is for NICs DMA point.
+.RE
+.TP
+.B \-\-get\-hwtimestamp\-cfg
+Show the selected time stamping PTP hardware clock configuration.
+.TP
+.B \-\-set\-hwtimestamp\-cfg
+Select the device's time stamping PTP hardware clock.
+.RS 4
+.TP
+.BI index \ N
+Index of the ptp hardware clock
+.TP
+.BI qualifier \ precise | approx
+Qualifier of the ptp hardware clock. Mainly "precise" the default one is
+for IEEE 1588 quality and "approx" is for NICs DMA point.
+.RE
 .TP
 .B \-x \-\-show\-rxfh\-indir \-\-show\-rxfh
 Retrieves the receive flow hash indirection table and/or RSS hash key.
@@ -1123,6 +1320,19 @@ even if a nibble is zero.
 .BI hfunc
 Sets RSS hash function of the specified network device.
 List of RSS hash functions which kernel supports is shown as a part of the --show-rxfh command output.
+.TP
+.BI xfrm
+Sets the RSS input transformation. Currently, only the
+.B symmetric-xor and symmetric-or-xor
+transformations are supported where the NIC XORs/ORs the L3 and/or L4 source
+and destination fields (as selected by
+.B --config-nfc rx-flow-hash
+) before passing them to the hash algorithm. The RSS hash function will
+then yield the same hash for the other flow direction where the source and
+destination fields are swapped (i.e. Symmetric RSS). Note that this operation
+reduces the entropy of the input set and the hash algorithm could potentially
+be exploited. Switch off (default) by
+.B xfrm none.
 .TP
 .BI start\  N
 For the \fBequal\fR and \fBweight\fR options, sets the starting receive queue
@@ -1505,6 +1715,294 @@ administratively up and to low power mode when the last port using it is put
 administratively down. The power mode policy can be set before a module is
 plugged-in.
 .RE
+.TP
+.B \-\-set-module-eeprom
+Write data to the transceiver module's EEPROM. The offset and
+length parameters select the portion of EEPROM to update. When
+the \fBvalue\fR parameter is provided, a single byte is written;
+otherwise \fBlength\fR bytes are read from standard input. Optional
+\fBpage\fR, \fBbank\fR and \fBi2c\fR parameters specify the EEPROM
+page, bank and I2C address to use.
+.TP
+.B \-\-get\-plca\-cfg
+Show the current PLCA parameters for the given interface.
+.RE
+.TP
+.B \-\-set\-plca\-cfg
+Change the PLCA settings for the given interface.
+.RS 4
+.TP
+.A2 enable on off
+Enables or disables the PLCA function. When the PLCA RS is disabled (default),
+the PHY operates in plain CSMA/CD mode. To enable PLCA, the PHY must be assigned
+a unique \fBplca\-id\fR other than 255. This one can be configured concurrently
+with the enable parameter. The \fBenable\fR parameter maps to IEEE 802.3cg-2019
+clause 30.16.1.1.1 (aPLCAAdminState) and clause 30.16.1.2.1 (acPLCAAdminControl).
+.TP
+.BI node\-id \ N
+The unique node identifier in the range [0 .. 255]. Node ID 0 is reserved for
+the coordinator node, the one generating the BEACON signal. There must be
+exactly one coordinator on a PLCA network. Setting the node ID to 255 (default)
+disables the node. This parameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.4
+(aPLCALocalNodeID).
+.TP
+.BI node\-cnt \ N
+The node-cnt [1 .. 255] should be set after the maximum number of nodes that
+can be plugged to the multi-drop network. This parameter regulates the minimum
+length of the PLCA cycle. Therefore, it is only meaningful for the coordinator
+node (\fBnod-id\fR = 0). Setting this parameter on a follower node has no
+effect. The \fBnode\-cnt\fR parameter maps to IEEE 802.3cg-2019 clause
+30.16.1.1.3 (aPLCANodeCount).
+.TP
+.BI to\-tmr \ N
+The TO timer parameter sets the value of the transmit opportunity timer in
+bit-times, and shall be set equal across all the nodes sharing the same
+medium for PLCA to work. The default value of 32 is enough to cover a link of
+roughly 50 mt. This parameter maps to  IEEE 802.3cg-2019 clause 30.16.1.1.5
+(aPLCATransmitOpportunityTimer).
+.TP
+.BI burst\-cnt \ N
+The \fBburst\-cnt\fR parameter [0 .. 255] indicates the extra number of packets
+that the node is allowed to send during a single transmit opportunity.
+By default, this attribute is 0, meaning that the node can send a sigle frame
+per TO. When greater than 0, the PLCA RS keeps the TO after any transmission,
+waiting for the MAC to send a new frame for up to \fBburst\-tmr\fR BTs. This can
+only happen a number of times per PLCA cycle up to the value of this parameter.
+After that, the burst is over and the normal counting of TOs resumes.
+This parameter maps to IEEE 802.3cg-2019 clause 30.16.1.1.6 (aPLCAMaxBurstCount).
+.TP
+.BI burst\-tmr \ N
+The \fBburst\-tmr\fR parameter [0 .. 255] sets how many bit-times the PLCA RS
+waits for the MAC to initiate a new transmission when \fBburst\-cnt\fR is
+greater than 0. If the MAC fails to send a new frame within this time, the burst
+ends and the counting of TOs resumes. Otherwise, the new frame is sent as part
+of the current burst. This parameter maps to IEEE 802.3cg-2019 clause
+30.16.1.1.7 (aPLCABurstTimer). The value of \fBburst\-tmr\fR should be set
+greater than the Inter-Frame-Gap (IFG) time of the MAC (plus some margin)
+for PLCA burst mode to work as intended.
+.RE
+.TP
+.B \-\-get\-plca\-status
+Show the current PLCA status for the given interface. If \fBon\fR, the PHY is
+successfully receiving or generating the BEACON signal. If \fBoff\fR, the PLCA
+function is temporarily disabled and the PHY is operating in plain CSMA/CD mode.
+.RE
+.TP
+.B \-\-show\-mm
+Show the MAC Merge layer state. The ethtool argument
+.B \-I \-\-include\-statistics
+can be used with this command, and MAC Merge layer statistics counters will
+also be retrieved.
+.RS 4
+.TP
+.B pmac-enabled
+Shows whether the pMAC is enabled and capable of receiving traffic and SMD-V
+frames (and responding to them with SMD-R replies).
+.TP
+.B tx-enabled
+Shows whether transmission on the pMAC is administratively enabled.
+.TP
+.B tx-active
+Shows whether transmission on the pMAC is active (verification is either
+successful, or was disabled).
+.TP
+.B tx-min-frag-size
+Shows the minimum size (in octets) of transmitted non-final fragments which
+can be received by the link partner. Corresponds to the standard addFragSize
+variable using the formula:
+
+tx-min-frag-size = 64 * (1 + addFragSize) - 4
+.TP
+.B rx-min-frag-size
+Shows the minimum size (in octets) of non-final fragments which the local
+device supports receiving.
+.TP
+.B verify-enabled
+Shows whether the verification state machine is enabled. This process, if
+successful, ensures that preemptible frames transmitted by the local device
+will not be dropped as error frames by the link partner.
+.TP
+.B verify-time
+Shows the interval in ms between verification attempts, represented as an
+integer between 1 and 128 ms. The standard defines a fixed number of
+verification attempts (verifyLimit) before failing the verification process.
+.TP
+.B max-verify-time
+Shows the maximum value for verify-time accepted by the local device, which
+may be less than 128 ms.
+.TP
+.B verify-status
+Shows the current state of the verification state machine of the local device.
+Values can be
+.B INITIAL,
+.B VERIFYING,
+.B SUCCEEDED,
+.B FAILED
+or
+.B DISABLED.
+
+.RE
+.TP
+.B \-\-set\-mm
+Set the MAC Merge layer parameters.
+.RS 4
+.TP
+.A2 pmac-enabled \ on off
+Enable reception for the pMAC.
+.TP
+.A2 tx-enabled \ on off
+Administatively enable transmission for the pMAC.
+.TP
+.B tx-min-frag-size \ N
+Set the minimum size (in octets) of transmitted non-final fragments which can
+be received by the link partner.
+.TP
+.A2 verify-enabled \ on off
+Enable or disable the verification state machine.
+.TP
+.B verify-time \ N
+Set the interval in ms between verification attempts.
+
+.RE
+.TP
+.B \-\-show\-pse
+Show the current Power Sourcing Equipment (PSE) status for the given interface.
+.RS 4
+.TP
+.B podl-pse-admin-state
+This attribute indicates the operational status of PoDL PSE functions, which
+can be modified using the
+.B podl-pse-admin-control
+parameter. It corresponds to IEEE 802.3-2018 30.15.1.1.2 (aPoDLPSEAdminState),
+with potential values being
+.B enabled, disabled
+.TP
+.B podl-pse-power-detection-status
+This attribute indicates the power detection status of the PoDL PSE. The
+status depend on internal PSE state machine and automatic PD classification
+support. It corresponds to IEEE 802.3-2018 30.15.1.1.3
+(aPoDLPSEPowerDetectionStatus) with potential values being
+.B disabled, searching, delivering power, sleep, idle, error
+.TP
+.B c33-pse-admin-state
+This attribute indicates the operational status of c33 PSE functions, which
+can be modified using the
+.B c33-pse-admin-control
+parameter. It corresponds to IEEE 802.3-2022 30.9.1.1.2 (aPSEAdminState),
+with potential values being
+.B enabled, disabled
+.TP
+.B c33-pse-power-detection-status
+This attribute indicates the power detection status of the c33 PSE. The
+status depend on internal PSE state machine and automatic PD classification
+support. It corresponds to IEEE 802.3-2022 30.9.1.1.5
+(aPSEPowerDetectionStatus) with potential values being
+.B disabled, searching, delivering power, test, fault, other fault
+.TP
+.B c33-pse-extended-state
+This attribute indicates the Extended state of the c33 PSE. The extended
+state correlated with the c33 PSE Extended Substate allows to have more
+detail on the c33 PSE current error state.
+It corresponds to IEEE 802.3-2022 33.2.4.4 Variables.
+.TP
+.B c33-pse-extended-substate
+This attribute indicates the Extended substate of the c33 PSE. Correlated
+with the c33 PSE Extended state value, it allows to have more detail on the
+c33 PSE current error state.
+.TP
+.B c33-pse-power-class
+This attribute identifies the power class of the c33 PSE. It depends on
+the class negotiated between the PSE and the PD. It corresponds to
+IEEE 802.3-2022 30.9.1.1.8 (aPSEPowerClassification).
+.TP
+.B c33-pse-actual-power
+This attribute identifies the actual power drawn by the c33 PSE. It
+corresponds to ``IEEE 802.3-2022`` 30.9.1.1.23 (aPSEActualPower). Actual
+power is reported in mW.
+.TP
+.B c33-pse-available-power-limit
+This attribute identifies the configured c33 PSE power limit in mW.
+.TP
+.B c33-pse-power-limit-ranges
+This attribute specifies the allowed power limit ranges in mW for
+configuring the c33-pse-avail-pw-limit parameter. It defines the valid
+power levels that can be assigned to the c33 PSE in compliance with the
+c33 standard.
+
+.RE
+.TP
+.B \-\-set\-pse
+Set Power Sourcing Equipment (PSE) parameters.
+.RS 4
+.TP
+.A2 podl-pse-admin-control \ enable disable
+This parameter manages PoDL PSE Admin operations in accordance with the IEEE
+802.3-2018 30.15.1.2.1 (acPoDLPSEAdminControl) specification.
+.TP
+.A2 c33-pse-admin-control \ enable disable
+This parameter manages c33 PSE Admin operations in accordance with the IEEE
+802.3-2022 30.9.1.2.1 (acPSEAdminControl) specification.
+.TP
+.B c33-pse-avail-pw-limit \ N
+This parameter manages c33 PSE Available Power Limit in mW, in accordance
+with the IEEE 802.3-2022 33.2.4.4 Variables (pse_available_power)
+specification.
+
+.RE
+.TP
+.B \-\-flash\-module\-firmware
+Flash the transceiver module's firmware. The firmware update process is
+composed from three logical steps. Downloading a firmware image to the
+transceiver module, running the image and committing the image so that it is
+run upon reset. When flash command is given, the firmware update process is
+performed in its entirety in that order.
+.RS 4
+.TP
+.BI file \ FILE
+Specifies the filename of the transceiver module firmware image. The firmware
+must first be installed in one of the directories where the kernel firmware
+loader or firmware agent will look, such as /lib/firmware. The firmware image
+is downloaded to the transceiver module, validated, run and committed.
+.RE
+.RS 4
+.TP
+.BI pass \ PASS
+Optional transceiver module password that might be required as part of the
+transceiver module firmware update process.
+
+.RE
+.TP
+.B \-\-show\-phys
+Show the PHY devices attached to an interface, and the way they link together.
+.RS 4
+.TP
+.B phy_index
+The PHY's index, that identifies it within the network interface. If the
+interface has multiple PHYs, they will each have a unique index on that
+interface. This index can then be used for commands that targets PHYs.
+.TP
+.B drvname
+The name of the driver bound to this PHY device.
+.TP
+.B name
+The PHY's device name, matching the name found in sysfs.
+.TP
+.B downstream_sfp_name
+If the PHY drives an SFP cage, this field contains the name of the associated
+SFP bus.
+.TP
+.B upstream_type \ mac | phy
+Indicates the nature of the device the PHY is attached to.
+.TP
+.B upstream_index
+If the PHY's upstream_type is
+.B phy
+, this field indicates the phy_index of the upstream phy.
+.TP
+.B upstream_sfp_name
+If the PHY is withing an SFP/SFF module, this field contains the name of the
+upstream SFP bus.
+
 .SH BUGS
 Not supported (in part or whole) on all network drivers.
 .SH AUTHOR

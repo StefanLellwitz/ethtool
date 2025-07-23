@@ -36,6 +36,8 @@ int nl_spause(struct cmd_context *ctx);
 int nl_geee(struct cmd_context *ctx);
 int nl_seee(struct cmd_context *ctx);
 int nl_tsinfo(struct cmd_context *ctx);
+int nl_gtsconfig(struct cmd_context *ctx);
+int nl_stsconfig(struct cmd_context *ctx);
 int nl_cable_test(struct cmd_context *ctx);
 int nl_cable_test_tdr(struct cmd_context *ctx);
 int nl_gtunnels(struct cmd_context *ctx);
@@ -47,11 +49,22 @@ int nl_gmodule(struct cmd_context *ctx);
 int nl_smodule(struct cmd_context *ctx);
 int nl_monitor(struct cmd_context *ctx);
 int nl_getmodule(struct cmd_context *ctx);
+int nl_grss(struct cmd_context *ctx);
+int nl_plca_get_cfg(struct cmd_context *ctx);
+int nl_plca_set_cfg(struct cmd_context *ctx);
+int nl_plca_get_status(struct cmd_context *ctx);
+int nl_get_mm(struct cmd_context *ctx);
+int nl_set_mm(struct cmd_context *ctx);
+int nl_gpse(struct cmd_context *ctx);
+int nl_spse(struct cmd_context *ctx);
+int nl_flash_module_fw(struct cmd_context *ctx);
+int nl_get_phy(struct cmd_context *ctx);
 
 void nl_monitor_usage(void);
 
 int nl_get_eeprom_page(struct cmd_context *ctx,
-		       struct ethtool_module_eeprom *request);
+                       struct ethtool_module_eeprom *request);
+int nl_set_module_eeprom(struct cmd_context *ctx);
 
 #else /* ETHTOOL_ENABLE_NETLINK */
 
@@ -80,10 +93,16 @@ static inline void nl_monitor_usage(void)
 
 static inline int
 nl_get_eeprom_page(struct cmd_context *ctx __maybe_unused,
-		   struct ethtool_module_eeprom *request __maybe_unused)
+                   struct ethtool_module_eeprom *request __maybe_unused)
 {
-	fprintf(stderr, "Netlink not supported by ethtool.\n");
-	return -EOPNOTSUPP;
+        fprintf(stderr, "Netlink not supported by ethtool.\n");
+        return -EOPNOTSUPP;
+}
+
+static inline int nl_set_module_eeprom(struct cmd_context *ctx __maybe_unused)
+{
+        fprintf(stderr, "Netlink not supported by ethtool.\n");
+        return -EOPNOTSUPP;
 }
 
 #define nl_gset			NULL
@@ -104,6 +123,8 @@ nl_get_eeprom_page(struct cmd_context *ctx __maybe_unused,
 #define nl_geee			NULL
 #define nl_seee			NULL
 #define nl_tsinfo		NULL
+#define nl_gtsconfig		NULL
+#define nl_stsconfig		NULL
 #define nl_cable_test		NULL
 #define nl_cable_test_tdr	NULL
 #define nl_gtunnels		NULL
@@ -114,6 +135,17 @@ nl_get_eeprom_page(struct cmd_context *ctx __maybe_unused,
 #define nl_getmodule		NULL
 #define nl_gmodule		NULL
 #define nl_smodule		NULL
+#define nl_set_module_eeprom      NULL
+#define nl_grss			NULL
+#define nl_plca_get_cfg		NULL
+#define nl_plca_set_cfg		NULL
+#define nl_plca_get_status	NULL
+#define nl_get_mm		NULL
+#define nl_set_mm		NULL
+#define nl_gpse			NULL
+#define nl_spse			NULL
+#define nl_flash_module_fw	NULL
+#define nl_get_phy		NULL
 
 #endif /* ETHTOOL_ENABLE_NETLINK */
 

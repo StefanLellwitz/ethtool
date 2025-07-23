@@ -41,7 +41,15 @@ Files: fsl_enetc.c
 Copyright: 2022, NXP
 License: GPL-2
 
-Files: uapi/linux/ethtool.h
+Files: hns3.c
+Copyright: 2023, Huawei Corporation
+License: GPL-2
+
+Files: netlink/ts.h
+Copyright: 2025, Bootlin, Kory Maincent <kory.maincent@bootlin.com>
+License: GPL-2
+
+Files: uapi/linux/*
 Copyright: 1998, David S. Miller (davem@redhat.com)
            2001, Jeff Garzik <jgarzik@pobox.com>
            2001, 2008, Sun Microsystems (thockin@sun.com)
@@ -88,6 +96,11 @@ License: GPL-2
 Files: lan78xx.c
 Copyright: 2018, Microchip Technology
 License: GPL-2
+
+Files: m4/*
+Copyright: 2008, Guido U. Draheim <guidod@gmx.de>
+ 2011, Maarten Bosmans <mkbosmans@gmail.com>
+License: GPL-3+ with autoconf exception
 
 Files: marvell.c
 Copyright: 2004, 2006, Stephen Hemminger <shemminger@osdl.org>
@@ -156,7 +169,7 @@ Files: debian/*
 Copyright: 2001-2005, Eric Delaunay <delaunay@debian.org>
            2006-2010, Anibal Monsalve Salazar <anibal@debian.org>
            2008-2020, Ben Hutchings <ben@decadent.org.uk>
-           2022, Salvatore Bonaccorso <carnil@debian.org>
+           2022-2025, Salvatore Bonaccorso <carnil@debian.org>
 License: GPL-2
 
 License: GPL-2
@@ -171,11 +184,40 @@ License: GPL-2
  PURPOSE.  See the GNU General Public License for more
  details.
  .
- You should have received a copy of the GNU General Public
- License along with this package; if not, write to the Free
- Software Foundation, Inc., 51 Franklin St, Fifth Floor,
- Boston, MA  02110-1301 USA
+ You should have received a copy of the GNU General Public License along
+ with this program. If not, see <https://www.gnu.org/licenses/>.
  .
  On Debian systems, the full text of the GNU General Public
  License version 2 can be found in the file
  `/usr/share/common-licenses/GPL-2'.
+
+License: GPL-3+ with autoconf exception
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the
+ Free Software Foundation, either version 3 of the License, or (at your
+ option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License along
+ with this program. If not, see <https://www.gnu.org/licenses/>.
+ .
+ As a special exception, the respective Autoconf Macro's copyright owner
+ gives unlimited permission to copy, distribute and modify the configure
+ scripts that are the output of Autoconf when processing the Macro. You
+ need not follow the terms of the GNU General Public License when using
+ or distributing such scripts, even though portions of the text of the
+ Macro appear in them. The GNU General Public License (GPL) does govern
+ all other use of the material that constitutes the Autoconf Macro.
+ .
+ This special exception to the GPL applies to versions of the Autoconf
+ Macro released by the Autoconf Archive. When you make and distribute a
+ modified version of the Autoconf Macro, you may extend this special
+ exception to the GPL to apply to your modified version as well.
+ .
+ On Debian systems, the full text of the GNU General Public
+ License version 3 can be found in the file
+ `/usr/share/common-licenses/GPL-3'.

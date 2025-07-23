@@ -216,6 +216,24 @@ err_close_dev:
 	return err_ret;
 }
 
+static const struct lookup_entry_u32 stats_src_values[] = {
+	{ .arg = "aggregate",	.val = ETHTOOL_MAC_STATS_SRC_AGGREGATE },
+	{ .arg = "emac",	.val = ETHTOOL_MAC_STATS_SRC_EMAC },
+	{ .arg = "pmac",	.val = ETHTOOL_MAC_STATS_SRC_PMAC },
+	{}
+};
+
+static const struct param_parser gpause_params[] = {
+	{
+		.arg		= "--src",
+		.type		= ETHTOOL_A_PAUSE_STATS_SRC,
+		.handler	= nl_parse_lookup_u32,
+		.handler_data	= stats_src_values,
+		.min_argc	= 1,
+	},
+	{}
+};
+
 int nl_gpause(struct cmd_context *ctx)
 {
 	struct nl_context *nlctx = ctx->nlctx;
@@ -225,11 +243,6 @@ int nl_gpause(struct cmd_context *ctx)
 
 	if (netlink_cmd_check(ctx, ETHTOOL_MSG_PAUSE_GET, true))
 		return -EOPNOTSUPP;
-	if (ctx->argc > 0) {
-		fprintf(stderr, "ethtool: unexpected parameter '%s'\n",
-			*ctx->argp);
-		return 1;
-	}
 
 	flags = get_stats_flag(nlctx, ETHTOOL_MSG_PAUSE_GET,
 			       ETHTOOL_A_PAUSE_HEADER);
@@ -237,6 +250,16 @@ int nl_gpause(struct cmd_context *ctx)
 				      ETHTOOL_A_PAUSE_HEADER, flags);
 	if (ret < 0)
 		return ret;
+
+	nlctx->cmd = "-a";
+	nlctx->argp = ctx->argp;
+	nlctx->argc = ctx->argc;
+	nlctx->devname = ctx->devname;
+	nlsk = nlctx->ethnl_socket;
+
+	ret = nl_parser(nlctx, gpause_params, NULL, PARSER_GROUP_NONE, NULL);
+	if (ret < 0)
+		return 1;
 
 	new_json_obj(ctx->json);
 	ret = nlsock_send_get_request(nlsk, pause_reply_cb);

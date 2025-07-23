@@ -1,3 +1,119 @@
+ethtool (1:6.15-2) UNRELEASED; urgency=medium
+
+  * d/salsa-ci.yml: Remove obsolete lintian error suppressions
+
+ -- Ben Hutchings <benh@debian.org>  Fri, 18 Jul 2025 14:13:18 +0200
+
+ethtool (1:6.15-1) experimental; urgency=medium
+
+  * New upstream release: 6.15
+  * d/copyright: Replace old FSF addresses with current GNU license URL
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 26 Jun 2025 21:24:33 +0200
+
+ethtool (1:6.14.1-1) unstable; urgency=medium
+
+  * New upstream release: 6.14.1
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 26 Jun 2025 20:30:58 +0200
+
+ethtool (1:6.14-2) unstable; urgency=medium
+
+  * Set type property to console-application for provided AppStream metainfo
+    XML (Closes: #1102647)
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 30 Apr 2025 06:38:17 +0200
+
+ethtool (1:6.14-1) unstable; urgency=medium
+
+  * New upstream release: 6.14
+    - Add AppStream metainfo XML with modalias documented supported hardware
+      (Closes: #1076629)
+  * debian/copyright: Add stanza for netlink/ts.h
+  * Update copyright years for debian/* packaging files
+  * Declare compliance with Debian policy 4.7.2
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 08 Apr 2025 06:35:16 +0200
+
+ethtool (1:6.11-1) unstable; urgency=medium
+
+  * New upstream release: 6.11
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 10 Oct 2024 22:20:20 +0200
+
+ethtool (1:6.10-1) unstable; urgency=medium
+
+  * New upstream release: 6.10
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 10 Aug 2024 07:18:02 +0200
+
+ethtool (1:6.9-1) unstable; urgency=medium
+
+  * New upstream release: 6.9
+  * Declare compliance with Debian policy 4.7.0
+  * debian/control: Replace Build-Depends on pkg-config with pkgconf
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Sat, 25 May 2024 17:17:29 +0200
+
+ethtool (1:6.7-1) unstable; urgency=medium
+
+  * New upstream release: 6.7
+  * Update copyright years for debian/* packaging files
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 31 Jan 2024 08:37:15 +0100
+
+ethtool (1:6.6-1) unstable; urgency=medium
+
+  * Upload to unstable
+  * New upstream release: 6.6
+  * debian/ethtool.if-{pre-up,up}: Reference ethtool in /usr/bin.
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 29 Nov 2023 17:07:25 +0100
+
+ethtool (1:6.5-2) experimental; urgency=medium
+
+  * d/rules: Install ethtool in /usr/sbin
+
+ -- Ben Hutchings <benh@debian.org>  Fri, 24 Nov 2023 16:21:40 +0000
+
+ethtool (1:6.5-1) unstable; urgency=medium
+
+  * New upstream release: 6.5
+  * debian/copyright: Fix format error in license stanza
+  * debian/copyright: Add new stanza for hns3 driver support
+  * debian/copyright: Cleanup trailing whitespaces
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Wed, 13 Sep 2023 07:27:18 +0200
+
+ethtool (1:6.4-1) unstable; urgency=medium
+
+  * New upstream release: 6.4
+  * debian/copyright: Add copyright information for new m4/* files
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Tue, 04 Jul 2023 09:32:47 +0200
+
+ethtool (1:6.3-1) unstable; urgency=medium
+
+  * Upload to unstable
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Mon, 12 Jun 2023 16:59:16 +0200
+
+ethtool (1:6.3-1~exp1) experimental; urgency=medium
+
+  * New upstream release: 6.3
+  * debian/copyright: Cover copyright statement for all files in uapi/linux
+  * Update copyright information for debian/* packaging files
+  * debian/watch: Switch to mode=git and generate orig tarball from git
+    repository
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Thu, 01 Jun 2023 20:42:43 +0200
+
+ethtool (1:6.2-1~exp1) experimental; urgency=medium
+
+  * New upstream release: 6.2
+
+ -- Salvatore Bonaccorso <carnil@debian.org>  Fri, 26 May 2023 15:51:03 +0200
+
 ethtool (1:6.1-1) unstable; urgency=medium
 
   * New upstream release: 6.1

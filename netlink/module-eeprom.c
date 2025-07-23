@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-#include "../sff-common.h"
+#include "../module-common.h"
 #include "../qsfp.h"
 #include "../cmis.h"
 #include "../internal.h"
@@ -22,6 +22,7 @@
 #define ETH_I2C_MAX_ADDRESS	0x7F
 
 struct cmd_params {
+	unsigned long present;
 	u8 dump_hex;
 	u8 dump_raw;
 	u32 offset;
@@ -29,6 +30,14 @@ struct cmd_params {
 	u32 page;
 	u32 bank;
 	u32 i2c_address;
+};
+
+enum {
+	PARAM_OFFSET = 2,
+	PARAM_LENGTH,
+	PARAM_PAGE,
+	PARAM_BANK,
+	PARAM_I2C,
 };
 
 static const struct param_parser getmodule_params[] = {
@@ -44,31 +53,31 @@ static const struct param_parser getmodule_params[] = {
 		.dest_offset	= offsetof(struct cmd_params, dump_raw),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_OFFSET] = {
 		.arg		= "offset",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, offset),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_LENGTH] = {
 		.arg		= "length",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, length),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_PAGE] = {
 		.arg		= "page",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, page),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_BANK] = {
 		.arg		= "bank",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, bank),
 		.min_argc	= 1,
 	},
-	{
+	[PARAM_I2C] = {
 		.arg		= "i2c",
 		.handler	= nl_parse_direct_u32,
 		.dest_offset	= offsetof(struct cmd_params, i2c_address),
@@ -216,15 +225,20 @@ static int eeprom_parse(struct cmd_context *ctx)
 
 	switch (request.data[0]) {
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
-	case SFF8024_ID_SFP:
+	case MODULE_ID_GBIC:
+	case MODULE_ID_SOLDERED_MODULE:
+	case MODULE_ID_SFP:
 		return sff8079_show_all_nl(ctx);
-	case SFF8024_ID_QSFP:
-	case SFF8024_ID_QSFP28:
-	case SFF8024_ID_QSFP_PLUS:
+	case MODULE_ID_QSFP:
+	case MODULE_ID_QSFP28:
+	case MODULE_ID_QSFP_PLUS:
 		return sff8636_show_all_nl(ctx);
-	case SFF8024_ID_QSFP_DD:
-	case SFF8024_ID_OSFP:
-	case SFF8024_ID_DSFP:
+	case MODULE_ID_QSFP_DD:
+	case MODULE_ID_OSFP:
+	case MODULE_ID_DSFP:
+	case MODULE_ID_QSFP_PLUS_CMIS:
+	case MODULE_ID_SFP_DD_CMIS:
+	case MODULE_ID_SFP_PLUS_CMIS:
 		return cmis_show_all_nl(ctx);
 #endif
 	default:
@@ -262,15 +276,18 @@ int nl_getmodule(struct cmd_context *ctx)
 	 * ioctl. Netlink can only request specific pages.
 	 */
 	if ((getmodule_cmd_params.dump_hex || getmodule_cmd_params.dump_raw) &&
-	    !getmodule_cmd_params.page && !getmodule_cmd_params.bank &&
-	    !getmodule_cmd_params.i2c_address) {
+	    !(getmodule_cmd_params.present & (1 << PARAM_PAGE |
+					      1 << PARAM_BANK |
+					      1 << PARAM_I2C))) {
 		nlctx->ioctl_fallback = true;
 		return -EOPNOTSUPP;
 	}
 
 #ifdef ETHTOOL_ENABLE_PRETTY_DUMP
-	if (getmodule_cmd_params.page || getmodule_cmd_params.bank ||
-	    getmodule_cmd_params.offset || getmodule_cmd_params.length)
+	if (getmodule_cmd_params.present & (1 << PARAM_PAGE |
+					    1 << PARAM_BANK |
+					    1 << PARAM_OFFSET |
+					    1 << PARAM_LENGTH))
 #endif
 		getmodule_cmd_params.dump_hex = true;
 
@@ -301,5 +318,142 @@ int nl_getmodule(struct cmd_context *ctx)
 
 cleanup:
 	eeprom_page_list_flush();
-	return ret;
+       return ret;
+}
+
+struct smodule_eeprom_params {
+       unsigned long present;
+       u32 offset;
+       u32 length;
+       u32 page;
+       u32 bank;
+       u32 i2c_address;
+       u8 value;
+};
+
+enum {
+       PARAM_S_OFFSET,
+       PARAM_S_LENGTH,
+       PARAM_S_PAGE,
+       PARAM_S_BANK,
+       PARAM_S_I2C,
+       PARAM_S_VALUE,
+};
+
+static const struct param_parser setmodule_params[] = {
+       [PARAM_S_OFFSET] = {
+               .arg            = "offset",
+               .handler        = nl_parse_direct_u32,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, offset),
+               .min_argc       = 1,
+       },
+       [PARAM_S_LENGTH] = {
+               .arg            = "length",
+               .handler        = nl_parse_direct_u32,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, length),
+               .min_argc       = 1,
+       },
+       [PARAM_S_PAGE] = {
+               .arg            = "page",
+               .handler        = nl_parse_direct_u32,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, page),
+               .min_argc       = 1,
+       },
+       [PARAM_S_BANK] = {
+               .arg            = "bank",
+               .handler        = nl_parse_direct_u32,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, bank),
+               .min_argc       = 1,
+       },
+       [PARAM_S_I2C] = {
+               .arg            = "i2c",
+               .handler        = nl_parse_direct_u32,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, i2c_address),
+               .min_argc       = 1,
+       },
+       [PARAM_S_VALUE] = {
+               .arg            = "value",
+               .handler        = nl_parse_direct_u8,
+               .dest_offset    = offsetof(struct smodule_eeprom_params, value),
+               .min_argc       = 1,
+       },
+       {}
+};
+
+int nl_set_module_eeprom(struct cmd_context *ctx)
+{
+       struct nl_context *nlctx = ctx->nlctx;
+       struct smodule_eeprom_params params = {};
+       struct nl_msg_buff *msgbuff;
+       struct nl_socket *nlsk;
+       u8 *data = NULL;
+       int ret;
+
+       if (netlink_cmd_check(ctx, ETHTOOL_MSG_MODULE_EEPROM_SET, false))
+               return -EOPNOTSUPP;
+       if (!ctx->argc) {
+               fprintf(stderr, "ethtool (--set-module-eeprom): parameters missing\n");
+               return 1;
+       }
+
+       nlctx->cmd = "--set-module-eeprom";
+       nlctx->argp = ctx->argp;
+       nlctx->argc = ctx->argc;
+       nlctx->devname = ctx->devname;
+       nlsk = nlctx->ethnl_socket;
+       msgbuff = &nlsk->msgbuff;
+
+       ret = msg_init(nlctx, msgbuff, ETHTOOL_MSG_MODULE_EEPROM_SET,
+                      NLM_F_REQUEST | NLM_F_ACK);
+       if (ret < 0)
+               return 2;
+       if (ethnla_fill_header(msgbuff, ETHTOOL_A_MODULE_EEPROM_HEADER,
+                              ctx->devname, 0))
+               return -EMSGSIZE;
+
+       ret = nl_parser(nlctx, setmodule_params, &params, PARSER_GROUP_NONE, NULL);
+       if (ret < 0)
+               return 1;
+
+       if (test_bit(PARAM_S_VALUE, &params.present)) {
+               params.length = 1;
+               data = &params.value;
+       } else {
+               if (!params.length) {
+                       fprintf(stderr, "length missing\n");
+                       return 1;
+               }
+               data = malloc(params.length);
+               if (!data)
+                       return -ENOMEM;
+               if (fread(data, params.length, 1, stdin) != 1) {
+                       fprintf(stderr, "not enough data from stdin\n");
+                       free(data);
+                       return 1;
+               }
+       }
+
+       if (ethnla_put_u32(msgbuff, ETHTOOL_A_MODULE_EEPROM_LENGTH, params.length) ||
+           ethnla_put_u32(msgbuff, ETHTOOL_A_MODULE_EEPROM_OFFSET, params.offset) ||
+           ethnla_put_u8(msgbuff, ETHTOOL_A_MODULE_EEPROM_PAGE, params.page) ||
+           ethnla_put_u8(msgbuff, ETHTOOL_A_MODULE_EEPROM_BANK, params.bank) ||
+           ethnla_put_u8(msgbuff, ETHTOOL_A_MODULE_EEPROM_I2C_ADDRESS,
+                         params.i2c_address ?: ETH_I2C_ADDRESS_LOW) ||
+           ethnla_put(msgbuff, ETHTOOL_A_MODULE_EEPROM_DATA, params.length, data)) {
+               ret = -EMSGSIZE;
+               goto out_free;
+       }
+
+       ret = nlsock_sendmsg(nlsk, NULL);
+       if (ret < 0)
+               goto out_free;
+       ret = nlsock_process_reply(nlsk, nomsg_reply_cb, nlctx);
+
+out_free:
+       if (!test_bit(PARAM_S_VALUE, &params.present))
+               free(data);
+       if (ret == 0)
+               return 0;
+       else
+               return nlctx->exit_code ?: 83;
 }

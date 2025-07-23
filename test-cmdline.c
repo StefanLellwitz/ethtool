@@ -25,6 +25,7 @@ static struct test_case {
 	{ 1, "" },
 	{ 0, "devname" },
 	{ 0, "15_char_devname" },
+	{ !IS_NL, "--json devname" },
 	/* netlink interface allows names up to 127 characters */
 	{ !IS_NL, "16_char_devname!" },
 	{ !IS_NL, "127_char_devname0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcde" },
@@ -263,6 +264,8 @@ static struct test_case {
 	{ 0, "--module-info devname" },
 	{ 0, "-m devname raw on" },
 	{ 0, "-m devname raw off" },
+        { 1, "--set-module-eeprom" },
+        { 0, "--set-module-eeprom devname offset 0 length 1 value 1" },
 	{ 0, "-m devname hex on" },
 	{ 0, "-m devname hex off" },
 	{ 1, "-m devname hex on raw on" },
