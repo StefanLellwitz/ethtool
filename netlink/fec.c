@@ -27,6 +27,8 @@ fec_mode_walk(unsigned int idx, const char *name, bool val, void *data)
 
 	if (!val)
 		return;
+	if (!name)
+		return;
 	if (empty)
 		*empty = false;
 

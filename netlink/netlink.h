@@ -98,14 +98,22 @@ int module_reply_cb(const struct nlmsghdr *nlhdr, void *data);
 int dump_link_modes(struct nl_context *nlctx, const struct nlattr *bitset,
 		    bool mask, unsigned int class, const char *before,
 		    const char *between, const char *after,
-		    const char *if_none);
+		    const char *if_none, const char *json_key);
 
-static inline void show_u32(const struct nlattr *attr, const char *label)
+static inline void show_u32(const char *key,
+			    const char *fmt,
+			    const struct nlattr *attr)
 {
-	if (attr)
-		printf("%s%u\n", label, mnl_attr_get_u32(attr));
-	else
-		printf("%sn/a\n", label);
+	if (is_json_context()) {
+		if (attr)
+			print_uint(PRINT_JSON, key, NULL,
+				   mnl_attr_get_u32(attr));
+	} else {
+		if (attr)
+			printf("%s%u\n", fmt, mnl_attr_get_u32(attr));
+		else
+			printf("%sn/a\n", fmt);
+	}
 }
 
 static inline const char *u8_to_bool(const uint8_t *val)
@@ -120,7 +128,7 @@ static inline void show_bool_val(const char *key, const char *fmt, uint8_t *val)
 {
 	if (is_json_context()) {
 		if (val)
-			print_bool(PRINT_JSON, key, NULL, val);
+			print_bool(PRINT_JSON, key, NULL, *val);
 	} else {
 		print_string(PRINT_FP, NULL, fmt, u8_to_bool(val));
 	}
@@ -130,6 +138,12 @@ static inline void show_bool(const char *key, const char *fmt,
 			     const struct nlattr *attr)
 {
 	show_bool_val(key, fmt, attr ? mnl_attr_get_payload(attr) : NULL);
+}
+
+static inline void show_cr(void)
+{
+	if (!is_json_context())
+		putchar('\n');
 }
 
 /* misc */
@@ -159,6 +173,22 @@ static inline int netlink_init_rtnl_socket(struct nl_context *nlctx)
 	if (nlctx->rtnl_socket)
 		return 0;
 	return nlsock_init(nlctx, &nlctx->rtnl_socket, NETLINK_ROUTE);
+}
+
+static inline uint64_t attr_get_uint(const struct nlattr *attr)
+{
+	switch (mnl_attr_get_payload_len(attr)) {
+	case sizeof(uint8_t):
+		return mnl_attr_get_u8(attr);
+	case sizeof(uint16_t):
+		return mnl_attr_get_u16(attr);
+	case sizeof(uint32_t):
+		return mnl_attr_get_u32(attr);
+	case sizeof(uint64_t):
+		return mnl_attr_get_u64(attr);
+	}
+
+	return -1ULL;
 }
 
 #endif /* ETHTOOL_NETLINK_INT_H__ */
