@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ETHTOOL=/sbin/ethtool
+ETHTOOL=/usr/sbin/ethtool
 
 test -x $ETHTOOL || exit 0
 

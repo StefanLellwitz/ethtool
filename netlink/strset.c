@@ -118,7 +118,7 @@ static struct perdev_strings *get_perdev_by_ifindex(int ifindex)
 		return perdev;
 
 	/* not found, allocate and insert into list */
-	perdev = calloc(sizeof(*perdev), 1);
+	perdev = calloc(1, sizeof(*perdev));
 	if (!perdev)
 		return NULL;
 	perdev->ifindex = ifindex;

@@ -21,6 +21,9 @@ int rings_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	DECLARE_ATTR_TB_INFO(tb);
 	struct nl_context *nlctx = data;
 	unsigned char tcp_hds;
+	char *tcp_hds_fmt;
+	char *tcp_hds_key;
+	char tcp_hds_buf[256];
 	bool silent;
 	int err_ret;
 	int ret;
@@ -34,40 +37,58 @@ int rings_reply_cb(const struct nlmsghdr *nlhdr, void *data)
 	if (!dev_ok(nlctx))
 		return err_ret;
 
-	if (silent)
-		putchar('\n');
-	printf("Ring parameters for %s:\n", nlctx->devname);
-	printf("Pre-set maximums:\n");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_MAX], "RX:\t\t");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_MINI_MAX], "RX Mini:\t");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_JUMBO_MAX], "RX Jumbo:\t");
-	show_u32(tb[ETHTOOL_A_RINGS_TX_MAX], "TX:\t\t");
-	printf("Current hardware settings:\n");
-	show_u32(tb[ETHTOOL_A_RINGS_RX], "RX:\t\t");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_MINI], "RX Mini:\t");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_JUMBO], "RX Jumbo:\t");
-	show_u32(tb[ETHTOOL_A_RINGS_TX], "TX:\t\t");
-	show_u32(tb[ETHTOOL_A_RINGS_RX_BUF_LEN], "RX Buf Len:\t\t");
-	show_u32(tb[ETHTOOL_A_RINGS_CQE_SIZE], "CQE Size:\t\t");
-	show_bool("tx-push", "TX Push:\t%s\n", tb[ETHTOOL_A_RINGS_TX_PUSH]);
+	open_json_object(NULL);
 
+	if (silent)
+		show_cr();
+	print_string(PRINT_ANY, "ifname", "Ring parameters for %s:\n",
+		     nlctx->devname);
+	print_string(PRINT_FP, NULL, "Pre-set maximums:\n", NULL);
+	show_u32("rx-max", "RX:\t\t\t", tb[ETHTOOL_A_RINGS_RX_MAX]);
+	show_u32("rx-mini-max", "RX Mini:\t\t", tb[ETHTOOL_A_RINGS_RX_MINI_MAX]);
+	show_u32("rx-jumbo-max", "RX Jumbo:\t\t",
+		 tb[ETHTOOL_A_RINGS_RX_JUMBO_MAX]);
+	show_u32("tx-max", "TX:\t\t\t", tb[ETHTOOL_A_RINGS_TX_MAX]);
+	show_u32("tx-push-buff-max-len", "TX push buff len:\t",
+		 tb[ETHTOOL_A_RINGS_TX_PUSH_BUF_LEN_MAX]);
+	show_u32("hds-thresh-max", "HDS thresh:\t\t",
+		 tb[ETHTOOL_A_RINGS_HDS_THRESH_MAX]);
+	print_string(PRINT_FP, NULL, "Current hardware settings:\n", NULL);
+	show_u32("rx", "RX:\t\t\t", tb[ETHTOOL_A_RINGS_RX]);
+	show_u32("rx-mini", "RX Mini:\t\t", tb[ETHTOOL_A_RINGS_RX_MINI]);
+	show_u32("rx-jumbo", "RX Jumbo:\t\t", tb[ETHTOOL_A_RINGS_RX_JUMBO]);
+	show_u32("tx", "TX:\t\t\t", tb[ETHTOOL_A_RINGS_TX]);
+	show_u32("rx-buf-len", "RX Buf Len:\t\t", tb[ETHTOOL_A_RINGS_RX_BUF_LEN]);
+	show_u32("cqe-size", "CQE Size:\t\t", tb[ETHTOOL_A_RINGS_CQE_SIZE]);
+	show_bool("tx-push", "TX Push:\t\t%s\n", tb[ETHTOOL_A_RINGS_TX_PUSH]);
+	show_bool("rx-push", "RX Push:\t\t%s\n", tb[ETHTOOL_A_RINGS_RX_PUSH]);
+	show_u32("tx-push-buf-len", "TX push buff len:\t",
+		 tb[ETHTOOL_A_RINGS_TX_PUSH_BUF_LEN]);
+
+	tcp_hds_fmt = "TCP data split:\t\t%s\n";
+	tcp_hds_key = "tcp-data-split";
 	tcp_hds = tb[ETHTOOL_A_RINGS_TCP_DATA_SPLIT] ?
 		mnl_attr_get_u8(tb[ETHTOOL_A_RINGS_TCP_DATA_SPLIT]) : 0;
-	printf("TCP data split:\t");
 	switch (tcp_hds) {
 	case ETHTOOL_TCP_DATA_SPLIT_UNKNOWN:
-		printf("n/a\n");
+		print_string(PRINT_FP, tcp_hds_key, tcp_hds_fmt, "n/a");
 		break;
 	case ETHTOOL_TCP_DATA_SPLIT_DISABLED:
-		printf("off\n");
+		print_string(PRINT_ANY, tcp_hds_key, tcp_hds_fmt, "off");
 		break;
 	case ETHTOOL_TCP_DATA_SPLIT_ENABLED:
-		printf("on\n");
+		print_string(PRINT_ANY, tcp_hds_key, tcp_hds_fmt, "on");
 		break;
 	default:
-		printf("unknown(%d)\n", tcp_hds);
+		snprintf(tcp_hds_buf, sizeof(tcp_hds_buf),
+			 "unknown(%d)\n", tcp_hds);
+		print_string(PRINT_ANY, tcp_hds_key, tcp_hds_fmt, tcp_hds_buf);
 		break;
 	}
+	show_u32("hds-thresh", "HDS thresh:\t\t",
+		 tb[ETHTOOL_A_RINGS_HDS_THRESH]);
+
+	close_json_object();
 
 	return MNL_CB_OK;
 }
@@ -90,10 +111,30 @@ int nl_gring(struct cmd_context *ctx)
 				      ETHTOOL_A_RINGS_HEADER, 0);
 	if (ret < 0)
 		return ret;
-	return nlsock_send_get_request(nlsk, rings_reply_cb);
+
+	new_json_obj(ctx->json);
+	ret = nlsock_send_get_request(nlsk, rings_reply_cb);
+	delete_json_obj();
+	return ret;
 }
 
 /* RINGS_SET */
+
+static const struct lookup_entry_u8 tcp_data_split_values[] = {
+	{
+		.arg		= "auto",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_UNKNOWN,
+	},
+	{
+		.arg		= "off",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_DISABLED,
+	},
+	{
+		.arg		= "on",
+		.val		= ETHTOOL_TCP_DATA_SPLIT_ENABLED,
+	},
+	{}
+};
 
 static const struct param_parser sring_params[] = {
 	{
@@ -121,10 +162,23 @@ static const struct param_parser sring_params[] = {
 		.min_argc	= 1,
 	},
 	{
+		.arg		= "tx-push-buf-len",
+		.type		= ETHTOOL_A_RINGS_TX_PUSH_BUF_LEN,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 1,
+	},
+	{
 		.arg            = "rx-buf-len",
 		.type           = ETHTOOL_A_RINGS_RX_BUF_LEN,
 		.handler        = nl_parse_direct_u32,
 		.min_argc       = 1,
+	},
+	{
+		.arg		= "tcp-data-split",
+		.type		= ETHTOOL_A_RINGS_TCP_DATA_SPLIT,
+		.handler	= nl_parse_lookup_u8,
+		.handler_data	= tcp_data_split_values,
+		.min_argc	= 1,
 	},
 	{
 		.arg            = "cqe-size",
@@ -137,6 +191,18 @@ static const struct param_parser sring_params[] = {
 		.type           = ETHTOOL_A_RINGS_TX_PUSH,
 		.handler        = nl_parse_u8bool,
 		.min_argc       = 1,
+	},
+	{
+		.arg            = "rx-push",
+		.type           = ETHTOOL_A_RINGS_RX_PUSH,
+		.handler        = nl_parse_u8bool,
+		.min_argc       = 1,
+	},
+	{
+		.arg		= "hds-thresh",
+		.type		= ETHTOOL_A_RINGS_HDS_THRESH,
+		.handler	= nl_parse_direct_u32,
+		.min_argc	= 0,
 	},
 	{}
 };

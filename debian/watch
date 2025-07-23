@@ -1,3 +1,4 @@
 version=4
-opts="pgpmode=mangle, pgpsigurlmangle=s|\.xz$|.sign|, decompress, dversionmangle=s/^1://" \
-https://www.kernel.org/pub/software/network/@PACKAGE@/@PACKAGE@-@ANY_VERSION@@ARCHIVE_EXT@$
+opts="mode=git, pgpmode=gittag, dversionmangle=s/^1://" \
+https://git.kernel.org/pub/scm/network/@PACKAGE@/@PACKAGE@.git \
+refs/tags/v@ANY_VERSION@

@@ -5,7 +5,9 @@
 
 override_dh_auto_configure:
 	./autogen.sh
-	dh_auto_configure -- --sbindir=/sbin
+# Add --sbindir=/sbin if backporting to bookworm or earlier
+# Revert as well the paths in debian/ethtool.if-{pre-up,up}
+	dh_auto_configure
 
 override_dh_auto_install:
 	dh_auto_install

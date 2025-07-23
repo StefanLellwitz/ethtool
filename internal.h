@@ -21,6 +21,9 @@
 #include <unistd.h>
 #include <endian.h>
 #include <sys/ioctl.h>
+#define __UAPI_DEF_IF_IFNAMSIZ	1
+#define __UAPI_DEF_IF_IFMAP	1
+#define __UAPI_DEF_IF_IFREQ	1
 #include <linux/if.h>
 
 #include "json_writer.h"
@@ -33,28 +36,11 @@
 struct nl_context;
 #endif
 
-/* ethtool.h expects these to be defined by <linux/types.h> */
-#ifndef HAVE_BE_TYPES
-typedef uint16_t __be16;
-typedef uint32_t __be32;
-typedef unsigned long long __be64;
-#endif
-
 typedef unsigned long long u64;
 typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t u8;
 typedef int32_t s32;
-
-/* ethtool.h epxects __KERNEL_DIV_ROUND_UP to be defined by <linux/kernel.h> */
-#include <linux/kernel.h>
-#ifndef __KERNEL_DIV_ROUND_UP
-#define __KERNEL_DIV_ROUND_UP(n, d) (((n) + (d) - 1) / (d))
-#endif
-
-#ifndef ALTIFNAMSIZ
-#define ALTIFNAMSIZ 128
-#endif
 
 #include <linux/ethtool.h>
 #include <linux/net_tstamp.h>
@@ -235,7 +221,9 @@ struct cmd_context {
 	char **argp;		/* arguments to the sub-command */
 	unsigned long debug;	/* debugging mask */
 	bool json;		/* Output JSON, if supported */
+	bool nl_disable;	/* Disable netlink even if available */
 	bool show_stats;	/* include command-specific stats */
+	uint32_t phy_index;	/* the phy index this command targets */
 #ifdef ETHTOOL_ENABLE_NETLINK
 	struct nl_context *nlctx;	/* netlink context (opaque) */
 #endif
@@ -294,6 +282,7 @@ int test_fclose(FILE *fh);
 #endif
 #endif
 
+int ioctl_init(struct cmd_context *ctx, bool no_dev);
 int send_ioctl(struct cmd_context *ctx, void *cmd);
 
 void dump_hex(FILE *f, const u8 *data, int len, int offset);
@@ -374,6 +363,12 @@ int altera_tse_dump_regs(struct ethtool_drvinfo *info,
 /* VMware vmxnet3 ethernet controller */
 int vmxnet3_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 
+/* hns3 ethernet controller */
+int hns3_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
+
+/* hibmcge ethernet controller */
+int hibmcge_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
+
 /* Rx flow classification */
 int rxclass_parse_ruleopts(struct cmd_context *ctx,
 			   struct ethtool_rx_flow_spec *fsp, __u32 *rss_context);
@@ -421,4 +416,6 @@ int cpsw_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 /* Microchip Ethernet Controller */
 int lan743x_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 
+/* Meta Ethernet Controller */
+int fbnic_dump_regs(struct ethtool_drvinfo *info, struct ethtool_regs *regs);
 #endif /* ETHTOOL_INTERNAL_H__ */
